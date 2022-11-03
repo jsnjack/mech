@@ -35,8 +35,8 @@ func Execute() {
 }
 
 func init() {
-	rootCmd.PersistentFlags().BoolVarP(&rootVerbose, "verbose", "v", false, "Enable verbose logging")
-	rootCmd.PersistentFlags().StringVarP(&rootConfig, "filename", "f", "", "Configuration filename")
+	rootCmd.PersistentFlags().BoolVarP(&rootVerbose, "verbose", "v", false, "enable verbose logging")
+	rootCmd.PersistentFlags().StringVarP(&rootConfig, "filename", "f", "", "configuration filename")
 	constellixAPIKey = os.Getenv("CONSTELLIX_API_KEY")
 	constellixSecretKey = os.Getenv("CONSTELLIX_SECRET_KEY")
 	if constellixAPIKey == "" || constellixSecretKey == "" {
