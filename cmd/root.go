@@ -5,10 +5,16 @@ Copyright © 2022 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/spf13/cobra"
 )
+
+var rootVerbose bool
+var rootConfig string
+var constellixAPIKey string
+var constellixSecretKey string
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -29,13 +35,12 @@ func Execute() {
 }
 
 func init() {
-	// Here you will define your flags and configuration settings.
-	// Cobra supports persistent flags, which, if defined here,
-	// will be global for your application.
-
-	// rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.mech.yaml)")
-
-	// Cobra also supports local flags, which will only run
-	// when this action is called directly.
-	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	rootCmd.PersistentFlags().BoolVarP(&rootVerbose, "verbose", "v", false, "Enable verbose logging")
+	rootCmd.PersistentFlags().StringVarP(&rootConfig, "filename", "f", "", "Configuration filename")
+	constellixAPIKey = os.Getenv("CONSTELLIX_API_KEY")
+	constellixSecretKey = os.Getenv("CONSTELLIX_SECRET_KEY")
+	if constellixAPIKey == "" || constellixSecretKey == "" {
+		fmt.Println("Provide CONSTELLIX_API_KEY and CONSTELLIX_SECRET_KEY environmental variables")
+		os.Exit(1)
+	}
 }
