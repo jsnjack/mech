@@ -16,7 +16,7 @@ func makeAPIRequest(method string, url string, payload io.Reader) (respBody []by
 	req.Header.Add("x-cns-security-token", buildSecurityToken())
 	req.Header.Add("Content-Type", "application/json")
 	if rootVerbose {
-		fmt.Printf("Requesting %s %s...\n", method, url)
+		fmt.Printf("requesting %s %s ...\n", method, url)
 	}
 	res, err := client.Do(req)
 	if err != nil {

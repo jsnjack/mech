@@ -7,11 +7,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/url"
+	"os"
 
 	"github.com/spf13/cobra"
 )
 
 const sonarBaseURL = "https://api.sonar.constellix.com/rest/api"
+
+var output string
 
 // discoverCmd represents the discover command
 var discoverCmd = &cobra.Command{
@@ -45,6 +48,20 @@ var discoverSonarCmd = &cobra.Command{
 			return err
 		}
 		fmt.Printf("Found %d Sonar HTTP Checks\n", len(httpChecks))
+		httpCheckBytes, err := json.MarshalIndent(&httpChecks, "", "  ")
+		if err != nil {
+			return err
+		}
+		if output != "" {
+			err = os.WriteFile(output, httpCheckBytes, 0644)
+			if err != nil {
+				return err
+			}
+			fmt.Printf("Sonar HTTP Checks saved to %s\n", output)
+		} else {
+			fmt.Println(string(httpCheckBytes))
+		}
+
 		return nil
 	},
 }
@@ -52,6 +69,7 @@ var discoverSonarCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(discoverCmd)
 	discoverCmd.AddCommand(discoverSonarCmd)
+	discoverCmd.PersistentFlags().StringVarP(&output, "output", "o", "", "write output to file, filepath")
 
 	// Here you will define your flags and configuration settings.
 
