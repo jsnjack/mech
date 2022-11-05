@@ -35,27 +35,28 @@ package cmd
 //	   "verificationPolicy": "SIMPLE"
 //	 }
 type SonarHTTPCheck struct {
-	Name                      string `json:"name"`
-	Host                      string `json:"host"`
-	Port                      int    `json:"port"`
-	ProtocolType              string `json:"protocolType"`
-	IPVersion                 string `json:"ipVersion"`
-	FQDN                      string `json:"fqdn"`
-	Path                      string `json:"path"`
-	SearchString              string `json:"searchString"`
-	ConnectionTimeout         int    `json:"connectionTimeout"`
-	ExpectedStatusCode        int    `json:"expectedStatusCode"`
-	UserAgent                 string `json:"userAgent"`
-	Note                      string `json:"note"`
-	RunTraceroute             string `json:"runTraceroute"`
-	ScheduleInterval          string `json:"scheduleInterval"`
-	SSLPolicy                 string `json:"sslPolicy"`
-	UserID                    int    `json:"userId"`
-	Interval                  string `json:"interval"`
-	MonitorIntervalPolicy     string `json:"monitorIntervalPolicy"`
-	CheckSites                []int  `json:"checkSites"`
-	NotificationGroups        []int  `json:"notificationGroups"`
-	ScheduleID                int    `json:"scheduleId"`
-	NotificationReportTimeout int    `json:"notificationReportTimeout"`
-	VerificationPolicy        string `json:"verificationPolicy"`
+	// ID                        int
+	Name                      string `json:"name" yaml:"name"`
+	Host                      string `json:"host" yaml:"host"`
+	Port                      int    `json:"port" yaml:"port"`
+	ProtocolType              string `json:"protocolType" yaml:"protocolType"`
+	IPVersion                 string `json:"ipVersion" yaml:"ipVersion"`
+	FQDN                      string `json:"fqdn" yaml:"fqdn"`
+	Path                      string `json:"path" yaml:"path"`
+	SearchString              string `json:"searchString" yaml:"searchString"`
+	ConnectionTimeout         int    `json:"connectionTimeout" yaml:"connectionTimeout"`
+	ExpectedStatusCode        int    `json:"expectedStatusCode" yaml:"expectedStatusCode"`
+	UserAgent                 string `json:"userAgent" yaml:"userAgent"`
+	Note                      string `json:"note" yaml:"note"`
+	RunTraceroute             string `json:"runTraceroute" yaml:"runTraceroute"`
+	ScheduleInterval          string `json:"scheduleInterval" yaml:"scheduleInterval"`
+	SSLPolicy                 string `json:"sslPolicy" yaml:"sslPolicy"`
+	UserID                    int    `json:"userId" yaml:"userId"`
+	Interval                  string `json:"interval" yaml:"interval"`
+	MonitorIntervalPolicy     string `json:"monitorIntervalPolicy" yaml:"monitorIntervalPolicy"`
+	CheckSites                []int  `json:"checkSites" yaml:"checkSites"`
+	NotificationGroups        []int  `json:"notificationGroups" yaml:"notificationGroups"`
+	ScheduleID                int    `json:"scheduleId" yaml:"scheduleId"`
+	NotificationReportTimeout int    `json:"notificationReportTimeout" yaml:"notificationReportTimeout"`
+	VerificationPolicy        string `json:"verificationPolicy" yaml:"verificationPolicy"`
 }

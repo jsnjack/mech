@@ -10,6 +10,7 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
+	yaml "gopkg.in/yaml.v3"
 )
 
 const sonarBaseURL = "https://api.sonar.constellix.com/rest/api"
@@ -48,7 +49,7 @@ var discoverSonarCmd = &cobra.Command{
 			return err
 		}
 		fmt.Printf("Found %d Sonar HTTP Checks\n", len(httpChecks))
-		httpCheckBytes, err := json.MarshalIndent(&httpChecks, "", "  ")
+		httpCheckBytes, err := yaml.Marshal(httpChecks)
 		if err != nil {
 			return err
 		}
@@ -69,7 +70,7 @@ var discoverSonarCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(discoverCmd)
 	discoverCmd.AddCommand(discoverSonarCmd)
-	discoverCmd.PersistentFlags().StringVarP(&output, "output", "o", "", "write output to file, filepath")
+	discoverCmd.PersistentFlags().StringVarP(&output, "output", "o", "", "write output in yaml format to file, filepath")
 
 	// Here you will define your flags and configuration settings.
 
