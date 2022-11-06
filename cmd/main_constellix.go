@@ -8,6 +8,14 @@ import (
 	"time"
 )
 
+// List of actions to sync
+type ResourceAction string
+
+const ActionCreate ResourceAction = "create"
+const ActionDelete ResourceAction = "delete"
+const ActionUpate ResourceAction = "update"
+const ActionOK ResourceAction = "ok"
+
 // buildSecurityToken returns security token which is used when authenticating
 // Constellix REST API requests
 func buildSecurityToken() string {
