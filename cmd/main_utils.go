@@ -6,7 +6,8 @@ import (
 	"strings"
 )
 
-func ToFilteredJSON(obj interface{}, includeFields ...string) ([]byte, error) {
+// toFilteredJSON mashals struct into JSON bytes which contain only specified fields
+func toFilteredJSON(obj interface{}, includeFields ...string) ([]byte, error) {
 	objBytes, err := json.Marshal(obj)
 	if err != nil {
 		return nil, err
@@ -32,6 +33,7 @@ func ToFilteredJSON(obj interface{}, includeFields ...string) ([]byte, error) {
 	return dataOutBytes, nil
 }
 
+// contains returns true if `v` is in `elems`
 func contains[T comparable](elems []T, v T) bool {
 	for _, s := range elems {
 		if v == s {
@@ -41,23 +43,14 @@ func contains[T comparable](elems []T, v T) bool {
 	return false
 }
 
-func findIndex[T comparable](collection []T, el T) int {
-	for i, x := range collection {
-		if x == el {
-			return i
-		}
-	}
-	return -1
-}
-
-// StructTagsToFieldNames returns struct field names from their tags
-func StructTagsToFieldNames(obj interface{}, tags ...string) []string {
+// getJSONTagsFromStruct returns struct field names from their tags
+func getJSONTagsFromStruct(obj interface{}, tags ...string) map[string]string {
+	res := make(map[string]string)
 	t := reflect.TypeOf(obj)
 	if t.Kind() == reflect.Pointer {
 		t = t.Elem()
 	}
 	fields := reflect.VisibleFields(t)
-	var filedsNames []string
 OUTER:
 	for _, tag := range tags {
 		for _, f := range fields {
@@ -65,11 +58,11 @@ OUTER:
 			if ok {
 				tagName := strings.Split(val, ",")[0]
 				if tagName == tag {
-					filedsNames = append(filedsNames, f.Name)
+					res[tag] = f.Name
 					continue OUTER
 				}
 			}
 		}
 	}
-	return filedsNames
+	return res
 }

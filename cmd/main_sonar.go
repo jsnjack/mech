@@ -71,8 +71,8 @@ type SonarHTTPCheck struct {
 }
 
 type ExpectedSonarHTTPCheck struct {
-	specifiedFieldsJSON []string
-	specifiedFields     []string
+	// Mapping of defined fields from parsed data to struct Field Names
+	definedFieldsMap map[string]string
 	SonarHTTPCheck
 }
 
@@ -94,14 +94,13 @@ func (ex *ExpectedSonarHTTPCheck) UnmarshalJSON(b []byte) error {
 		return err
 	}
 
-	keysJSON := make([]string, len(dm))
+	definedFields := make([]string, len(dm))
 	i := 0
 	for k := range dm {
-		keysJSON[i] = k
+		definedFields[i] = k
 		i++
 	}
-	ex.specifiedFieldsJSON = keysJSON
-	ex.specifiedFields = StructTagsToFieldNames(&ex.SonarHTTPCheck, keysJSON...)
+	ex.definedFieldsMap = getJSONTagsFromStruct(&ex.SonarHTTPCheck, definedFields...)
 
 	return nil
 }
@@ -122,31 +121,33 @@ func (e *ExpectedSonarHTTPCheck) Compare(activeResources *[]SonarHTTPCheck) (Res
 		return ActionCreate, nil, nil
 	}
 
-	diffFields := make([]string, 0)
+	diffStructFields := make([]string, 0)
 
 	expectedValue := reflect.ValueOf(e.SonarHTTPCheck)
 	activeValue := reflect.ValueOf(active)
-	for _, fieldName := range e.specifiedFields {
-		fmt.Printf("Inspecting field %s\n", fieldName)
-		fieldExpected := expectedValue.FieldByName(fieldName)
-		fieldActive := activeValue.FieldByName(fieldName)
+	for _, structFieldName := range e.definedFieldsMap {
+		fmt.Printf("Inspecting field %s\n", structFieldName)
+		fieldExpected := expectedValue.FieldByName(structFieldName)
+		fieldActive := activeValue.FieldByName(structFieldName)
+		// Compare field values
 		if fieldExpected.Interface() != fieldActive.Interface() {
-			diffFields = append(diffFields, fieldName)
-			fmt.Printf("Field %s got %s, want %s\n", fieldName, fieldActive, fieldExpected)
+			diffStructFields = append(diffStructFields, structFieldName)
+			fmt.Printf("Field %q got %q, want %q\n", structFieldName, fieldActive, fieldExpected)
 		}
 	}
 
-	if len(diffFields) == 0 {
+	if len(diffStructFields) == 0 {
 		return ActionOK, nil, nil
 	}
 
 	diffJSONFields := make([]string, 0)
-	for _, item := range diffFields {
-		idx := findIndex(e.specifiedFields, item)
-		diffJSONFields = append(diffJSONFields, e.specifiedFieldsJSON[idx])
+	for k, v := range e.definedFieldsMap {
+		if contains(diffStructFields, v) {
+			diffJSONFields = append(diffJSONFields, k)
+		}
 	}
 
-	dataBytes, err := ToFilteredJSON(e.SonarHTTPCheck, diffJSONFields...)
+	dataBytes, err := toFilteredJSON(e.SonarHTTPCheck, diffJSONFields...)
 	if err != nil {
 		return "", nil, err
 	}
