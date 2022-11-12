@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"encoding/json"
-	"fmt"
 	"reflect"
 
 	"golang.org/x/exp/slices"
@@ -128,13 +127,11 @@ func (e *ExpectedSonarHTTPCheck) Compare(activeResources *[]SonarHTTPCheck) (Res
 	expectedValue := reflect.ValueOf(e.SonarHTTPCheck)
 	activeValue := reflect.ValueOf(active)
 	for _, structFieldName := range e.definedFieldsMap {
-		fmt.Printf("Inspecting field %s\n", structFieldName)
 		fieldExpected := expectedValue.FieldByName(structFieldName)
 		fieldActive := activeValue.FieldByName(structFieldName)
 		// Compare field values
-		if fieldExpected.Interface() != fieldActive.Interface() {
+		if !reflect.DeepEqual(fieldExpected.Interface(), fieldActive.Interface()) {
 			diffStructFields = append(diffStructFields, structFieldName)
-			fmt.Printf("Field %q got %q, want %q\n", structFieldName, fieldActive, fieldExpected)
 		}
 	}
 
