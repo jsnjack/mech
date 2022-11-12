@@ -45,30 +45,29 @@ type SonarHTTPCheck struct {
 	// Mandatory fields
 	// TODO: Verify it!
 	// Name is the unique identifier of Check
-	Name          string `json:"name" yaml:"name"`
-	Host          string `json:"host" yaml:"host"`
-	IPVersion     string `json:"ipVersion" yaml:"ipVersion"`
-	Port          int    `json:"port" yaml:"port"`
-	ProtocolType  string `json:"protocolType" yaml:"protocolType"`
-	Interval      string `json:"interval" yaml:"interval"`
-	CheckSites    []int  `json:"checkSites" yaml:"checkSites"`
-	RunTraceroute string `json:"runTraceroute" yaml:"runTraceroute"`
-
-	FQDN                      string `json:"fqdn,omitempty" yaml:"fqdn"`
-	Path                      string `json:"path,omitempty" yaml:"path"`
-	SearchString              string `json:"searchString,omitempty" yaml:"searchString"`
-	ConnectionTimeout         int    `json:"connectionTimeout,omitempty" yaml:"connectionTimeout"`
-	ExpectedStatusCode        int    `json:"expectedStatusCode,omitempty" yaml:"expectedStatusCode"`
-	UserAgent                 string `json:"userAgent,omitempty" yaml:"userAgent"`
-	Note                      string `json:"note,omitempty" yaml:"note"`
-	ScheduleInterval          string `json:"scheduleInterval,omitempty" yaml:"scheduleInterval"`
-	SSLPolicy                 string `json:"sslPolicy,omitempty" yaml:"sslPolicy"`
-	UserID                    int    `json:"userId,omitempty" yaml:"userId"`
-	MonitorIntervalPolicy     string `json:"monitorIntervalPolicy,omitempty" yaml:"monitorIntervalPolicy"`
-	NotificationGroups        []int  `json:"notificationGroups,omitempty" yaml:"notificationGroups"`
-	ScheduleID                int    `json:"scheduleId,omitempty" yaml:"scheduleId"`
-	NotificationReportTimeout int    `json:"notificationReportTimeout,omitempty" yaml:"notificationReportTimeout"`
-	VerificationPolicy        string `json:"verificationPolicy,omitempty" yaml:"verificationPolicy"`
+	Name                      string `json:"name" yaml:"name"`
+	Host                      string `json:"host" yaml:"host"`
+	IPVersion                 string `json:"ipVersion" yaml:"ipVersion"`
+	Port                      int    `json:"port" yaml:"port"`
+	ProtocolType              string `json:"protocolType" yaml:"protocolType"`
+	Interval                  string `json:"interval" yaml:"interval"`
+	CheckSites                []int  `json:"checkSites" yaml:"checkSites"`
+	RunTraceroute             string `json:"runTraceroute" yaml:"runTraceroute"`
+	FQDN                      string `json:"fqdn" yaml:"fqdn"`
+	Path                      string `json:"path" yaml:"path"`
+	SearchString              string `json:"searchString" yaml:"searchString"`
+	ConnectionTimeout         int    `json:"connectionTimeout" yaml:"connectionTimeout"`
+	ExpectedStatusCode        int    `json:"expectedStatusCode" yaml:"expectedStatusCode"`
+	UserAgent                 string `json:"userAgent" yaml:"userAgent"`
+	Note                      string `json:"note" yaml:"note"`
+	ScheduleInterval          string `json:"scheduleInterval" yaml:"scheduleInterval"`
+	SSLPolicy                 string `json:"sslPolicy" yaml:"sslPolicy"`
+	UserID                    int    `json:"userId" yaml:"userId"`
+	MonitorIntervalPolicy     string `json:"monitorIntervalPolicy" yaml:"monitorIntervalPolicy"`
+	NotificationGroups        []int  `json:"notificationGroups" yaml:"notificationGroups"`
+	ScheduleID                int    `json:"scheduleId" yaml:"scheduleId"`
+	NotificationReportTimeout int    `json:"notificationReportTimeout" yaml:"notificationReportTimeout"`
+	VerificationPolicy        string `json:"verificationPolicy" yaml:"verificationPolicy"`
 }
 
 type ExpectedSonarHTTPCheck struct {
