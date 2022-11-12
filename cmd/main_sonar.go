@@ -153,8 +153,3 @@ func (e *ExpectedSonarHTTPCheck) Compare(activeResources *[]SonarHTTPCheck) (Res
 	return ActionUpate, dataBytes, nil
 
 }
-
-// Verify verifies data for validity
-func (e *ExpectedSonarHTTPCheck) Verify() error {
-	return nil
-}
