@@ -2,6 +2,8 @@ package cmd
 
 import (
 	"encoding/json"
+	"fmt"
+	"net/url"
 	"reflect"
 
 	"golang.org/x/exp/slices"
@@ -152,4 +154,25 @@ func (e *ExpectedSonarHTTPCheck) Compare(activeResources *[]SonarHTTPCheck) (Res
 
 	return ActionUpate, dataBytes, nil
 
+}
+
+// GetSonarChecks returns active Sonar Checks
+func GetSonarChecks() (*[]SonarHTTPCheck, error) {
+	// Fetch HTTP checks
+	fmt.Println("Retrieving Sonar HTTP Checks...")
+	endpoint, err := url.JoinPath(sonarBaseURL, "http")
+	if err != nil {
+		return nil, err
+	}
+	data, err := makeAPIRequest("GET", endpoint, nil)
+	if err != nil {
+		return nil, fmt.Errorf("unable to retrieve Sonar HTTP checks: %s", err)
+	}
+
+	httpChecks := make([]SonarHTTPCheck, 0)
+	err = json.Unmarshal(data, &httpChecks)
+	if err != nil {
+		return nil, err
+	}
+	return &httpChecks, nil
 }

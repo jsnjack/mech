@@ -4,9 +4,7 @@ Copyright © 2022 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
-	"encoding/json"
 	"fmt"
-	"net/url"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -31,24 +29,12 @@ var sonarDiscoverCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		cmd.SilenceUsage = true
 
-		// Fetch HTTP checks
-		fmt.Println("Retrieving Sonar HTTP Checks...")
-		endpoint, err := url.JoinPath(sonarBaseURL, "http")
-		if err != nil {
-			return err
-		}
-		data, err := makeAPIRequest("GET", endpoint, nil)
-		if err != nil {
-			return fmt.Errorf("unable to retrieve Sonar HTTP checks: %s", err)
-		}
-
-		httpChecks := make([]SonarHTTPCheck, 0)
-		err = json.Unmarshal(data, &httpChecks)
+		httpChecks, err := GetSonarChecks()
 		if err != nil {
 			return err
 		}
 
-		fmt.Printf("Found %d Sonar HTTP Checks\n", len(httpChecks))
+		fmt.Printf("Found %d Sonar HTTP Checks\n", len(*httpChecks))
 		httpCheckBytes, err := yaml.Marshal(httpChecks)
 		if err != nil {
 			return err
@@ -78,6 +64,52 @@ var sonarSyncCmd = &cobra.Command{
 	Short: "Sync configuration to Constellix",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		cmd.SilenceUsage = true
+		inputFile, err := cmd.Flags().GetString("input")
+		if err != nil {
+			return err
+		}
+		if inputFile == "" {
+			return fmt.Errorf("provide configuration file location via --input argument")
+		}
+
+		dataBytes, err := os.ReadFile(inputFile)
+		if err != nil {
+			return err
+		}
+
+		fmt.Println(string(dataBytes))
+		config := make([]ExpectedSonarHTTPCheck, 0)
+		err = yaml.Unmarshal(dataBytes, &config)
+		if err != nil {
+			return err
+		}
+		if len(config) == 0 {
+			fmt.Println("configuration is empty, nothing to do")
+			return nil
+		}
+
+		httpChecks, err := GetSonarChecks()
+		if err != nil {
+			return err
+		}
+
+		for _, expectedCheck := range config {
+			fmt.Printf("%+v\n", expectedCheck)
+			action, _, err := expectedCheck.Compare(httpChecks)
+			if err != nil {
+				return err
+			}
+			fmt.Printf("%s: %s\n", action, expectedCheck.Name)
+			switch action {
+			case ActionOK:
+			case ActionDelete:
+			case ActionUpate:
+			case ActionCreate:
+			default:
+				return fmt.Errorf("unhandled action %q", action)
+			}
+		}
+
 		return nil
 	},
 }
@@ -88,4 +120,7 @@ func init() {
 	sonarDiscoverCmd.PersistentFlags().StringP("output", "o", "", "write output in yaml format to file, filepath")
 
 	sonarCmd.AddCommand(sonarSyncCmd)
+	sonarSyncCmd.PersistentFlags().StringP("input", "i", "", "configuration file, filepath")
+	sonarSyncCmd.PersistentFlags().Bool("doit", false, "apply planned changes")
+	sonarSyncCmd.PersistentFlags().Bool("remove", false, "remove resources which are not present in configuration file")
 }
