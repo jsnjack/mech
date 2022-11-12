@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"reflect"
+
+	"golang.org/x/exp/slices"
 )
 
 // SonarHTTPCheck represents sonar check record
@@ -142,7 +144,7 @@ func (e *ExpectedSonarHTTPCheck) Compare(activeResources *[]SonarHTTPCheck) (Res
 
 	diffJSONFields := make([]string, 0)
 	for k, v := range e.definedFieldsMap {
-		if contains(diffStructFields, v) {
+		if slices.Contains(diffStructFields, v) {
 			diffJSONFields = append(diffJSONFields, k)
 		}
 	}

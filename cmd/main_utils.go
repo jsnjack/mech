@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"reflect"
 	"strings"
+
+	"golang.org/x/exp/slices"
 )
 
 // toFilteredJSON mashals struct into JSON bytes which contain only specified fields
@@ -21,7 +23,7 @@ func toFilteredJSON(obj interface{}, includeFields ...string) ([]byte, error) {
 
 	// Create a new data obj which contains only fields which need to be included
 	for key, value := range dataIn {
-		if contains(includeFields, key) {
+		if slices.Contains(includeFields, key) {
 			dataOut[key] = value
 		}
 	}
@@ -31,16 +33,6 @@ func toFilteredJSON(obj interface{}, includeFields ...string) ([]byte, error) {
 		return nil, err
 	}
 	return dataOutBytes, nil
-}
-
-// contains returns true if `v` is in `elems`
-func contains[T comparable](elems []T, v T) bool {
-	for _, s := range elems {
-		if v == s {
-			return true
-		}
-	}
-	return false
 }
 
 // getJSONTagsFromStruct returns struct field names from their tags
