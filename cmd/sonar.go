@@ -15,15 +15,13 @@ import (
 
 const sonarBaseURL = "https://api.sonar.constellix.com/rest/api"
 
-var outputFlagSonarDiscoverCmd string
-
 // sonarCmd represents the sonar command
 var sonarCmd = &cobra.Command{
 	Use:   "sonar",
 	Short: "Sonar checks",
 }
 
-// sonarDiscover represents the discover sonar command
+// sonarDiscoverCmd represents the discover sonar command
 var sonarDiscoverCmd = &cobra.Command{
 	Use:   "discover",
 	Short: "Retrieve existing Sonar configuration",
@@ -43,22 +41,29 @@ var sonarDiscoverCmd = &cobra.Command{
 		if err != nil {
 			return fmt.Errorf("unable to retrieve Sonar HTTP checks: %s", err)
 		}
+
 		httpChecks := make([]SonarHTTPCheck, 0)
 		err = json.Unmarshal(data, &httpChecks)
 		if err != nil {
 			return err
 		}
+
 		fmt.Printf("Found %d Sonar HTTP Checks\n", len(httpChecks))
 		httpCheckBytes, err := yaml.Marshal(httpChecks)
 		if err != nil {
 			return err
 		}
-		if outputFlagSonarDiscoverCmd != "" {
-			err = os.WriteFile(outputFlagSonarDiscoverCmd, httpCheckBytes, 0644)
+
+		outputFile, err := cmd.Flags().GetString("output")
+		if err != nil {
+			return err
+		}
+		if outputFile != "" {
+			err = os.WriteFile(outputFile, httpCheckBytes, 0644)
 			if err != nil {
 				return err
 			}
-			fmt.Printf("Sonar HTTP Checks saved to %s\n", outputFlagSonarDiscoverCmd)
+			fmt.Printf("Sonar HTTP Checks saved to %s\n", outputFile)
 		} else {
 			fmt.Println(string(httpCheckBytes))
 		}
@@ -67,8 +72,20 @@ var sonarDiscoverCmd = &cobra.Command{
 	},
 }
 
+// sonarSyncCmd represents the sync sonar command
+var sonarSyncCmd = &cobra.Command{
+	Use:   "sync",
+	Short: "Sync configuration to Constellix",
+	RunE: func(cmd *cobra.Command, args []string) error {
+		cmd.SilenceUsage = true
+		return nil
+	},
+}
+
 func init() {
 	rootCmd.AddCommand(sonarCmd)
 	sonarCmd.AddCommand(sonarDiscoverCmd)
-	sonarDiscoverCmd.PersistentFlags().StringVarP(&outputFlagSonarDiscoverCmd, "output", "o", "", "write output in yaml format to file, filepath")
+	sonarDiscoverCmd.PersistentFlags().StringP("output", "o", "", "write output in yaml format to file, filepath")
+
+	sonarCmd.AddCommand(sonarSyncCmd)
 }
