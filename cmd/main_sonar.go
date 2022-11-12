@@ -7,6 +7,7 @@ import (
 	"reflect"
 
 	"golang.org/x/exp/slices"
+	yaml "gopkg.in/yaml.v3"
 )
 
 // SonarHTTPCheck represents sonar check record
@@ -78,12 +79,12 @@ type ExpectedSonarHTTPCheck struct {
 	SonarHTTPCheck
 }
 
-// UnmarshalJSON unmarshals the mesage and stores original fields
-func (ex *ExpectedSonarHTTPCheck) UnmarshalJSON(b []byte) error {
+// UnmarshalYAML unmarshals the mesage and stores original fields
+func (ex *ExpectedSonarHTTPCheck) UnmarshalYAML(value *yaml.Node) error {
 
 	// Unmarshall data into SonarHTTPCheck struct
 	var s SonarHTTPCheck
-	err := json.Unmarshal(b, &s)
+	err := value.Decode(&s)
 	if err != nil {
 		return err
 	}
@@ -91,7 +92,7 @@ func (ex *ExpectedSonarHTTPCheck) UnmarshalJSON(b []byte) error {
 
 	// Save specified fields
 	dm := make(map[string]interface{})
-	err = json.Unmarshal(b, &dm)
+	err = value.Decode(&dm)
 	if err != nil {
 		return err
 	}
@@ -102,7 +103,7 @@ func (ex *ExpectedSonarHTTPCheck) UnmarshalJSON(b []byte) error {
 		definedFields[i] = k
 		i++
 	}
-	ex.definedFieldsMap = getJSONTagsFromStruct(&ex.SonarHTTPCheck, definedFields...)
+	ex.definedFieldsMap = getFieldNamesMap(&ex.SonarHTTPCheck, "yaml", definedFields...)
 
 	return nil
 }

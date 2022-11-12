@@ -35,8 +35,8 @@ func toFilteredJSON(obj interface{}, includeFields ...string) ([]byte, error) {
 	return dataOutBytes, nil
 }
 
-// getJSONTagsFromStruct returns struct field names from their tags
-func getJSONTagsFromStruct(obj interface{}, tags ...string) map[string]string {
+// getFieldNamesMap returns struct field names from their tags
+func getFieldNamesMap(obj interface{}, tagType string, tags ...string) map[string]string {
 	res := make(map[string]string)
 	t := reflect.TypeOf(obj)
 	if t.Kind() == reflect.Pointer {
@@ -46,7 +46,7 @@ func getJSONTagsFromStruct(obj interface{}, tags ...string) map[string]string {
 OUTER:
 	for _, tag := range tags {
 		for _, f := range fields {
-			val, ok := f.Tag.Lookup("json")
+			val, ok := f.Tag.Lookup(tagType)
 			if ok {
 				tagName := strings.Split(val, ",")[0]
 				if tagName == tag {

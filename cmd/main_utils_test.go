@@ -12,7 +12,7 @@ func TestGetJSONTagsFromStruct_empty_struct(t *testing.T) {
 		"Joe", 10,
 	}
 	var tags []string
-	result := getJSONTagsFromStruct(a, tags...)
+	result := getFieldNamesMap(a, "yaml", tags...)
 	if len(result) != 0 {
 		t.Errorf("expected empty, got %s\n", result)
 	}
@@ -26,7 +26,7 @@ func TestGetJSONTagsFromStruct_empty_pointer(t *testing.T) {
 		"Joe", 10,
 	}
 	var tags []string
-	result := getJSONTagsFromStruct(&a, tags...)
+	result := getFieldNamesMap(&a, "yaml", tags...)
 	if len(result) != 0 {
 		t.Errorf("expected empty, got %s\n", result)
 	}
@@ -40,7 +40,7 @@ func TestGetJSONTagsFromStruct_struct_public_empty(t *testing.T) {
 		"Joe", 10,
 	}
 	var tags []string
-	result := getJSONTagsFromStruct(a, tags...)
+	result := getFieldNamesMap(a, "yaml", tags...)
 	if len(result) != 0 {
 		t.Errorf("expected empty, got %s\n", result)
 	}
@@ -55,7 +55,7 @@ func TestGetJSONTagsFromStruct_struct_public_no_match(t *testing.T) {
 	}
 	var tags []string
 	tags = append(tags, "name")
-	result := getJSONTagsFromStruct(a, tags...)
+	result := getFieldNamesMap(a, "yaml", tags...)
 	if len(result) != 0 {
 		t.Errorf("expected empty, got %s\n", result)
 	}
@@ -63,14 +63,14 @@ func TestGetJSONTagsFromStruct_struct_public_no_match(t *testing.T) {
 
 func TestGetJSONTagsFromStruct_struct_public_match1(t *testing.T) {
 	a := struct {
-		Name string `json:"name"`
+		Name string `yaml:"name"`
 		age  int
 	}{
 		"Joe", 10,
 	}
 	var tags []string
 	tags = append(tags, "name")
-	result := getJSONTagsFromStruct(a, tags...)
+	result := getFieldNamesMap(a, "yaml", tags...)
 	if len(result) != 1 {
 		t.Errorf("expected one element, got %d\n", len(result))
 		return
@@ -90,14 +90,14 @@ func TestGetJSONTagsFromStruct_struct_public_match1(t *testing.T) {
 
 func TestGetJSONTagsFromStruct_struct_public_match2(t *testing.T) {
 	a := struct {
-		Name string `json:"name,omitempty"`
+		Name string `yaml:"name,omitempty"`
 		age  int
 	}{
 		"Joe", 10,
 	}
 	var tags []string
 	tags = append(tags, "name")
-	result := getJSONTagsFromStruct(a, tags...)
+	result := getFieldNamesMap(a, "yaml", tags...)
 	if len(result) != 1 {
 		t.Errorf("expected one element, got %d\n", len(result))
 		return
@@ -124,7 +124,7 @@ func TestGetJSONTagsFromStruct_pointer_public_match(t *testing.T) {
 	}
 	var tags []string
 	tags = append(tags, "name")
-	result := getJSONTagsFromStruct(&a, tags...)
+	result := getFieldNamesMap(&a, "json", tags...)
 	if len(result) != 1 {
 		t.Errorf("expected one element, got %d\n", len(result))
 		return
@@ -151,7 +151,7 @@ func TestGetJSONTagsFromStruct_with_yaml(t *testing.T) {
 	}
 	var tags []string
 	tags = append(tags, "name")
-	result := getJSONTagsFromStruct(&a, tags...)
+	result := getFieldNamesMap(&a, "json", tags...)
 	if len(result) != 1 {
 		t.Errorf("expected one element, got %d\n", len(result))
 		return

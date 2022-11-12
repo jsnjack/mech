@@ -1,8 +1,9 @@
 package cmd
 
 import (
-	"encoding/json"
 	"testing"
+
+	yaml "gopkg.in/yaml.v3"
 )
 
 func TestExpectedSonarHTTPCheck_Compare_not_found(t *testing.T) {
@@ -21,9 +22,12 @@ func TestExpectedSonarHTTPCheck_Compare_not_found(t *testing.T) {
 }
 
 func TestExpectedSonarHTTPCheck_Compare_different(t *testing.T) {
-	expectedStr := `{"name": "prod", "port": 80}`
+	expectedStr := `
+name: prod
+port: 80
+`
 	var expected ExpectedSonarHTTPCheck
-	err := json.Unmarshal([]byte(expectedStr), &expected)
+	err := yaml.Unmarshal([]byte(expectedStr), &expected)
 	if err != nil {
 		t.Error(err)
 		return
@@ -43,9 +47,12 @@ func TestExpectedSonarHTTPCheck_Compare_different(t *testing.T) {
 }
 
 func TestExpectedSonarHTTPCheck_Compare_different_slice_eq(t *testing.T) {
-	expectedStr := `{"name": "prod", "checkSites": [1,2]}`
+	expectedStr := `
+name: prod
+checkSites: [1,2]
+`
 	var expected ExpectedSonarHTTPCheck
-	err := json.Unmarshal([]byte(expectedStr), &expected)
+	err := yaml.Unmarshal([]byte(expectedStr), &expected)
 	if err != nil {
 		t.Error(err)
 		return
@@ -69,9 +76,12 @@ func TestExpectedSonarHTTPCheck_Compare_different_slice_eq(t *testing.T) {
 }
 
 func TestExpectedSonarHTTPCheck_Compare_different_slice_neq(t *testing.T) {
-	expectedStr := `{"name": "prod", "checkSites": [1,2]}`
+	expectedStr := `
+name: prod
+checkSites: [1,2]
+`
 	var expected ExpectedSonarHTTPCheck
-	err := json.Unmarshal([]byte(expectedStr), &expected)
+	err := yaml.Unmarshal([]byte(expectedStr), &expected)
 	if err != nil {
 		t.Error(err)
 		return
@@ -80,7 +90,7 @@ func TestExpectedSonarHTTPCheck_Compare_different_slice_neq(t *testing.T) {
 	activeList = append(activeList, SonarHTTPCheck{Name: "prod", CheckSites: []int{2}})
 	action, data, err := expected.Compare(&activeList)
 	if action != ActionUpate {
-		t.Errorf("expected action '%v', got '%v'", ActionOK, action)
+		t.Errorf("expected action '%v', got '%v'", ActionUpate, action)
 		return
 	}
 
@@ -97,9 +107,12 @@ func TestExpectedSonarHTTPCheck_Compare_different_slice_neq(t *testing.T) {
 }
 
 func TestExpectedSonarHTTPCheck_Compare_different_slice_neq_order(t *testing.T) {
-	expectedStr := `{"name": "prod", "checkSites": [1,2]}`
+	expectedStr := `
+name: prod
+checkSites: [1,2]
+`
 	var expected ExpectedSonarHTTPCheck
-	err := json.Unmarshal([]byte(expectedStr), &expected)
+	err := yaml.Unmarshal([]byte(expectedStr), &expected)
 	if err != nil {
 		t.Error(err)
 		return
@@ -124,10 +137,14 @@ func TestExpectedSonarHTTPCheck_Compare_different_slice_neq_order(t *testing.T) 
 
 }
 
-func TestExpectedSonarHTTPCheck_UnmarshalJSON(t *testing.T) {
-	data := `{"name": "prod", "port": 80, "alien": true}`
+func TestExpectedSonarHTTPCheck_UnmarshalYAML(t *testing.T) {
+	data := `
+name: prod
+port: 80
+alien: yes
+`
 	var obj ExpectedSonarHTTPCheck
-	err := json.Unmarshal([]byte(data), &obj)
+	err := yaml.Unmarshal([]byte(data), &obj)
 	if err != nil {
 		t.Error(err)
 		return
