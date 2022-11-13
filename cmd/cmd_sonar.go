@@ -84,18 +84,11 @@ var sonarSyncCmd = &cobra.Command{
 			return err
 		}
 
-		// Read configuration file
-		dataBytes, err := os.ReadFile(inputFile)
+		config, err := getConfig(inputFile)
 		if err != nil {
 			return err
 		}
-
-		config := make([]ExpectedSonarHTTPCheck, 0)
-		err = yaml.Unmarshal(dataBytes, &config)
-		if err != nil {
-			return err
-		}
-		if len(config) == 0 {
+		if len(config.SonarHTTPChecks) == 0 {
 			fmt.Println("configuration is empty, nothing to do")
 			return nil
 		}
@@ -110,7 +103,7 @@ var sonarSyncCmd = &cobra.Command{
 		defer report.Flush()
 
 		// Check if anything needs to be created / updated
-		for _, expectedCheck := range config {
+		for _, expectedCheck := range config.SonarHTTPChecks {
 			fmt.Printf("Inspecting %q...\n", expectedCheck.Name)
 			action, data, err := expectedCheck.Compare(httpChecks)
 			if err != nil {
@@ -148,7 +141,7 @@ var sonarSyncCmd = &cobra.Command{
 		// Check if anything needs to be deleted
 		for _, existingCheck := range *httpChecks {
 			fmt.Printf("Inspecting %q...\n", existingCheck.Name)
-			for _, configCheck := range config {
+			for _, configCheck := range config.SonarHTTPChecks {
 				if configCheck.Name == existingCheck.Name {
 					continue
 				}
