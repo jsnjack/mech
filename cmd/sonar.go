@@ -119,21 +119,6 @@ var sonarSyncCmd = &cobra.Command{
 				switch action {
 				case ActionOK:
 					break
-				case ActionDelete:
-					if allowRemoving {
-						fmt.Printf("  removing resource %q\n", expectedCheck.Name)
-						active, found := expectedCheck.GetActive(httpChecks)
-						if found {
-							err = DeleteSonarCheck(data, active.ID)
-							if err != nil {
-								return err
-							}
-						} else {
-							return fmt.Errorf("%q not found", expectedCheck.Name)
-						}
-					} else {
-						fmt.Printf("  pass --remove flag to remove %q\n", expectedCheck.Name)
-					}
 				case ActionUpate:
 					fmt.Printf("  updating resource %q\n", expectedCheck.Name)
 					active, found := expectedCheck.GetActive(httpChecks)
@@ -155,6 +140,27 @@ var sonarSyncCmd = &cobra.Command{
 					return fmt.Errorf("unhandled action %q", action)
 				}
 			}
+		}
+
+		for _, existingCheck := range *httpChecks {
+			fmt.Printf("Inspecting %q...\n", existingCheck.Name)
+			for _, configCheck := range config {
+				if configCheck.Name == existingCheck.Name {
+					continue
+				}
+			}
+			fmt.Printf("  status: %s\n", ActionDelete)
+			fmt.Fprintf(report, "%s\t%s\t%s\n", colorAction(ActionDelete), existingCheck.Name, "")
+			if doit && allowRemoving {
+				fmt.Printf("  removing resource %q\n", existingCheck.Name)
+				err = DeleteSonarCheck(nil, existingCheck.ID)
+				if err != nil {
+					return err
+				}
+			} else {
+				fmt.Printf("  pass --remove flag to remove %q\n", existingCheck.Name)
+			}
+
 		}
 
 		return nil
