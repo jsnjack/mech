@@ -6,12 +6,12 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"text/tabwriter"
 
+	"github.com/juju/ansiterm"
 	"github.com/spf13/cobra"
 	yaml "gopkg.in/yaml.v3"
 )
-
-const sonarBaseURL = "https://api.sonar.constellix.com/rest/api"
 
 // sonarCmd represents the sonar command
 var sonarCmd = &cobra.Command{
@@ -64,6 +64,8 @@ var sonarSyncCmd = &cobra.Command{
 	Short: "Sync configuration to Constellix",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		cmd.SilenceUsage = true
+
+		// Collect flags
 		inputFile, err := cmd.Flags().GetString("input")
 		if err != nil {
 			return err
@@ -72,12 +74,21 @@ var sonarSyncCmd = &cobra.Command{
 			return fmt.Errorf("provide configuration file location via --input argument")
 		}
 
+		doit, err := cmd.Flags().GetBool("doit")
+		if err != nil {
+			return err
+		}
+
+		allowRemoving, err := cmd.Flags().GetBool("remove")
+		if err != nil {
+			return err
+		}
+
 		dataBytes, err := os.ReadFile(inputFile)
 		if err != nil {
 			return err
 		}
 
-		fmt.Println(string(dataBytes))
 		config := make([]ExpectedSonarHTTPCheck, 0)
 		err = yaml.Unmarshal(dataBytes, &config)
 		if err != nil {
@@ -93,20 +104,44 @@ var sonarSyncCmd = &cobra.Command{
 			return err
 		}
 
+		report := ansiterm.NewTabWriter(os.Stdout, 10, 0, 2, ' ', tabwriter.Debug)
+		defer report.Flush()
+
 		for _, expectedCheck := range config {
-			fmt.Printf("%+v\n", expectedCheck)
-			action, _, err := expectedCheck.Compare(httpChecks)
+			fmt.Printf("Inspecting %q...\n", expectedCheck.Name)
+			action, data, err := expectedCheck.Compare(httpChecks)
 			if err != nil {
 				return err
 			}
-			fmt.Printf("%s: %s\n", action, expectedCheck.Name)
-			switch action {
-			case ActionOK:
-			case ActionDelete:
-			case ActionUpate:
-			case ActionCreate:
-			default:
-				return fmt.Errorf("unhandled action %q", action)
+			fmt.Printf("  status: %s\n", action)
+			fmt.Fprintf(report, "%s\t%s\t%s\n", colorAction(action), expectedCheck.Name, string(data))
+			if doit {
+				switch action {
+				case ActionOK:
+				case ActionDelete:
+					if allowRemoving {
+						fmt.Println("REMOVING")
+					}
+				case ActionUpate:
+					fmt.Printf("  updating resource %q\n", expectedCheck.Name)
+					active, found := expectedCheck.GetActive(httpChecks)
+					if found {
+						err = UpdateSonarCheck(data, active.ID)
+						if err != nil {
+							return err
+						}
+					} else {
+						return fmt.Errorf("%q not found", expectedCheck.Name)
+					}
+				case ActionCreate:
+					fmt.Printf("  creating new resource %q\n", expectedCheck.Name)
+					err = CreateSonarCheck(data)
+					if err != nil {
+						return err
+					}
+				default:
+					return fmt.Errorf("unhandled action %q", action)
+				}
 			}
 		}
 

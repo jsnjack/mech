@@ -8,6 +8,31 @@ import (
 	"golang.org/x/exp/slices"
 )
 
+const Reset = "\033[0m"
+const Red = "\033[31m"
+const Green = "\033[32m"
+const Yellow = "\033[33m"
+const Blue = "\033[34m"
+const Purple = "\033[35m"
+const Cyan = "\033[36m"
+const Gray = "\033[37m"
+const White = "\033[97m"
+
+func colorAction(action ResourceAction) string {
+	var start string
+	switch action {
+	case ActionCreate:
+		start = Green
+	case ActionDelete:
+		start = Red
+	case ActionUpate:
+		start = Yellow
+	case ActionOK:
+		start = White
+	}
+	return start + string(action) + Reset
+}
+
 // toFilteredJSON mashals struct into JSON bytes which contain only specified fields
 func toFilteredJSON(obj interface{}, includeFields ...string) ([]byte, error) {
 	objBytes, err := json.Marshal(obj)

@@ -1,14 +1,18 @@
 package cmd
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"net/url"
 	"reflect"
 
+	"golang.org/x/exp/maps"
 	"golang.org/x/exp/slices"
 	yaml "gopkg.in/yaml.v3"
 )
+
+const sonarBaseURL = "https://api.sonar.constellix.com/rest/api"
 
 // SonarHTTPCheck represents sonar check record
 // Example:
@@ -48,6 +52,7 @@ type SonarHTTPCheck struct {
 	// Mandatory fields
 	// TODO: Verify it!
 	// Name is the unique identifier of Check
+	ID                        int    `json:"id"`
 	Name                      string `json:"name" yaml:"name"`
 	Host                      string `json:"host" yaml:"host"`
 	IPVersion                 string `json:"ipVersion" yaml:"ipVersion"`
@@ -77,6 +82,8 @@ type ExpectedSonarHTTPCheck struct {
 	// Mapping of defined fields from parsed data to struct Field Names
 	definedFieldsMap map[string]string
 	SonarHTTPCheck
+	// This fields must be present when running update action
+	mandatoryStructFields []string
 }
 
 // UnmarshalYAML unmarshals the mesage and stores original fields
@@ -104,6 +111,7 @@ func (ex *ExpectedSonarHTTPCheck) UnmarshalYAML(value *yaml.Node) error {
 		i++
 	}
 	ex.definedFieldsMap = getFieldNamesMap(&ex.SonarHTTPCheck, "yaml", definedFields...)
+	ex.mandatoryStructFields = []string{"Name", "ProtocolType", "Port"}
 
 	return nil
 }
@@ -111,35 +119,37 @@ func (ex *ExpectedSonarHTTPCheck) UnmarshalYAML(value *yaml.Node) error {
 // Compare compares ExpectedSonarHTTPCheck with active SonarHTTPCheck. Returns Status and data
 func (e *ExpectedSonarHTTPCheck) Compare(activeResources *[]SonarHTTPCheck) (ResourceAction, []byte, error) {
 	var active SonarHTTPCheck
-	var found bool
-	for _, el := range *activeResources {
-		if el.Name == e.Name {
-			active = el
-			found = true
-			break
-		}
+	el, found := e.GetActive(activeResources)
+	// el is a pointer, but reflect code expects real object
+	if found {
+		active = *el
 	}
 
-	if !found {
-		return ActionCreate, nil, nil
-	}
+	var action ResourceAction
 
 	diffStructFields := make([]string, 0)
+	if !found {
+		action = ActionCreate
+		diffStructFields = maps.Values(e.definedFieldsMap)
+	} else {
+		action = ActionUpate
+		expectedValue := reflect.ValueOf(e.SonarHTTPCheck)
+		activeValue := reflect.ValueOf(active)
+		for _, structFieldName := range e.definedFieldsMap {
+			fieldExpected := expectedValue.FieldByName(structFieldName)
+			fieldActive := activeValue.FieldByName(structFieldName)
+			// Compare field values
+			if !reflect.DeepEqual(fieldExpected.Interface(), fieldActive.Interface()) {
+				diffStructFields = append(diffStructFields, structFieldName)
+			}
+		}
 
-	expectedValue := reflect.ValueOf(e.SonarHTTPCheck)
-	activeValue := reflect.ValueOf(active)
-	for _, structFieldName := range e.definedFieldsMap {
-		fieldExpected := expectedValue.FieldByName(structFieldName)
-		fieldActive := activeValue.FieldByName(structFieldName)
-		// Compare field values
-		if !reflect.DeepEqual(fieldExpected.Interface(), fieldActive.Interface()) {
-			diffStructFields = append(diffStructFields, structFieldName)
+		if len(diffStructFields) == 0 {
+			return ActionOK, nil, nil
 		}
 	}
 
-	if len(diffStructFields) == 0 {
-		return ActionOK, nil, nil
-	}
+	diffStructFields = append(diffStructFields, e.mandatoryStructFields...)
 
 	diffJSONFields := make([]string, 0)
 	for k, v := range e.definedFieldsMap {
@@ -153,8 +163,16 @@ func (e *ExpectedSonarHTTPCheck) Compare(activeResources *[]SonarHTTPCheck) (Res
 		return "", nil, err
 	}
 
-	return ActionUpate, dataBytes, nil
+	return action, dataBytes, nil
+}
 
+func (e *ExpectedSonarHTTPCheck) GetActive(activeResources *[]SonarHTTPCheck) (*SonarHTTPCheck, bool) {
+	for _, el := range *activeResources {
+		if el.Name == e.Name {
+			return &el, true
+		}
+	}
+	return nil, false
 }
 
 // GetSonarChecks returns active Sonar Checks
@@ -165,7 +183,7 @@ func GetSonarChecks() (*[]SonarHTTPCheck, error) {
 	if err != nil {
 		return nil, err
 	}
-	data, err := makeAPIRequest("GET", endpoint, nil)
+	data, err := makeAPIRequest("GET", endpoint, nil, 200)
 	if err != nil {
 		return nil, fmt.Errorf("unable to retrieve Sonar HTTP checks: %s", err)
 	}
@@ -176,4 +194,32 @@ func GetSonarChecks() (*[]SonarHTTPCheck, error) {
 		return nil, err
 	}
 	return &httpChecks, nil
+}
+
+func CreateSonarCheck(payload []byte) error {
+	endpoint, err := url.JoinPath(sonarBaseURL, "http")
+	if err != nil {
+		return err
+	}
+	payloadReader := bytes.NewReader(payload)
+	body, err := makeAPIRequest("POST", endpoint, payloadReader, 201)
+	if err != nil {
+		fmt.Println("  unexpected response. Details: " + string(body))
+		return fmt.Errorf("unable to create Sonar HTTP checks: %s", err)
+	}
+	return nil
+}
+
+func UpdateSonarCheck(payload []byte, id int) error {
+	endpoint, err := url.JoinPath(sonarBaseURL, "http", fmt.Sprint(id))
+	if err != nil {
+		return err
+	}
+	payloadReader := bytes.NewReader(payload)
+	body, err := makeAPIRequest("PUT", endpoint, payloadReader, 200)
+	if err != nil {
+		fmt.Println("  unexpected response. Details: " + string(body))
+		return fmt.Errorf("unable to update Sonar HTTP checks: %s", err)
+	}
+	return nil
 }

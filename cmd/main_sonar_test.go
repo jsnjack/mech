@@ -9,14 +9,18 @@ import (
 func TestExpectedSonarHTTPCheck_Compare_not_found(t *testing.T) {
 	expected := ExpectedSonarHTTPCheck{}
 	expected.SonarHTTPCheck = SonarHTTPCheck{Name: "prod"}
+	expected.definedFieldsMap = map[string]string{
+		"name": "Name",
+	}
 	activeList := make([]SonarHTTPCheck, 0)
 	action, data, _ := expected.Compare(&activeList)
 	if action != ActionCreate {
 		t.Errorf("expected action '%v', got '%v'", ActionCreate, action)
 		return
 	}
-	if data != nil {
-		t.Errorf("expected nil data, got %s", string(data))
+	expectedData := `{"name":"prod"}`
+	if string(data) != expectedData {
+		t.Errorf("expected %q data, got %q", expectedData, string(data))
 		return
 	}
 }

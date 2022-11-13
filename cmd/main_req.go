@@ -6,7 +6,7 @@ import (
 	"net/http"
 )
 
-func makeAPIRequest(method string, url string, payload io.Reader) (respBody []byte, err error) {
+func makeAPIRequest(method string, url string, payload io.Reader, expectedStatusCode int) (respBody []byte, err error) {
 	client := &http.Client{}
 	req, err := http.NewRequest(method, url, payload)
 
@@ -16,7 +16,7 @@ func makeAPIRequest(method string, url string, payload io.Reader) (respBody []by
 	req.Header.Add("x-cns-security-token", buildSecurityToken())
 	req.Header.Add("Content-Type", "application/json")
 	if rootVerbose {
-		fmt.Printf("requesting %s %s ...\n", method, url)
+		fmt.Printf("  requesting %s %s ...\n", method, url)
 	}
 	res, err := client.Do(req)
 	if err != nil {
@@ -28,8 +28,8 @@ func makeAPIRequest(method string, url string, payload io.Reader) (respBody []by
 	if err != nil {
 		return nil, err
 	}
-	if res.StatusCode != 200 {
-		return body, fmt.Errorf("unexpected status code %d", res.StatusCode)
+	if res.StatusCode != expectedStatusCode {
+		return body, fmt.Errorf("unexpected status code %d, want %d", res.StatusCode, expectedStatusCode)
 	}
 	return body, nil
 }
