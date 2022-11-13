@@ -16,10 +16,12 @@ type MainConfig struct {
 
 type SonarConfig struct {
 	HTTPChecksConfigFiles []string `yaml:"http_checks"`
+	TCPChecksConfigFiles  []string `yaml:"tcp_checks"`
 }
 
 type Config struct {
 	SonarHTTPChecks []ExpectedSonarHTTPCheck
+	SonarTCPChecks  []ExpectedSonarTCPCheck
 }
 
 func getConfig(configFile string) (*Config, error) {
@@ -55,6 +57,24 @@ func getConfig(configFile string) (*Config, error) {
 		}
 		if len(httpChecks) > 0 {
 			config.SonarHTTPChecks = append(config.SonarHTTPChecks, httpChecks...)
+		}
+	}
+	for _, item := range mainConfig.Constellix.Sonar.TCPChecksConfigFiles {
+		configToRead := filepath.Join(filepath.Dir(configFile), item)
+		if rootVerbose {
+			fmt.Printf("  reading %s...\n", configToRead)
+		}
+		configToReadBytes, err := os.ReadFile(configToRead)
+		if err != nil {
+			return nil, err
+		}
+		var tcpChecks []ExpectedSonarTCPCheck
+		err = yaml.Unmarshal(configToReadBytes, &tcpChecks)
+		if err != nil {
+			return nil, err
+		}
+		if len(tcpChecks) > 0 {
+			config.SonarTCPChecks = append(config.SonarTCPChecks, tcpChecks...)
 		}
 	}
 	return &config, nil

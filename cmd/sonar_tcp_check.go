@@ -12,60 +12,41 @@ import (
 	yaml "gopkg.in/yaml.v3"
 )
 
-// SonarHTTPCheck represents sonar check record
 // Example:
 //
 //	{
-//	   "id": 81994,
-//	   "name": "msi-prod-pdfeditor-backup",
-//	   "host": "18.180.166.79",
-//	   "port": 443,
-//	   "protocolType": "HTTPS",
-//	   "ipVersion": "IPV4",
-//	   "fqdn": "msi-pdfeditor.surfly.jp",
-//	   "path": "/blackbox/HealthCheck",
-//	   "searchString": "",
-//	   "connectionTimeout": 5,
-//	   "expectedStatusCode": 200,
-//	   "userAgent": "IE",
-//	   "note": "",
-//	   "runTraceroute": "DISABLED",
-//	   "scheduleInterval": "NONE",
-//	   "sslPolicy": "IGNORE",
-//	   "userId": 300003895,
-//	   "interval": "ONEMINUTE",
-//	   "monitorIntervalPolicy": "PARALLEL",
-//	   "checkSites": [
-//	     15
-//	   ],
-//	   "notificationGroups": [
-//	     41680,
-//	     41675
-//	   ],
-//	   "scheduleId": 0,
-//	   "notificationReportTimeout": 1440,
-//	   "verificationPolicy": "SIMPLE"
-//	 }
-type SonarHTTPCheck struct {
-	// Name should be the unique identifier of Check
+//	  "id": 83645,
+//	  "name": "tcp-test",
+//	  "host": "159.69.18.28",
+//	  "port": 443,
+//	  "ipVersion": "IPV4",
+//	  "stringToSend": "",
+//	  "stringToReceive": "",
+//	  "note": "",
+//	  "runTraceroute": "DISABLED",
+//	  "userId": 300003895,
+//	  "interval": "THIRTYSECONDS",
+//	  "monitorIntervalPolicy": "PARALLEL",
+//	  "checkSites": [
+//	    4
+//	  ],
+//	  "notificationGroups": [],
+//	  "scheduleId": 0,
+//	  "notificationReportTimeout": 1440,
+//	  "verificationPolicy": "SIMPLE"
+//	}
+type SonarTCPCheck struct {
 	ID                        int    `json:"id"`
 	Name                      string `json:"name" yaml:"name"`
 	Host                      string `json:"host" yaml:"host"`
 	IPVersion                 string `json:"ipVersion" yaml:"ipVersion"`
 	Port                      int    `json:"port" yaml:"port"`
-	ProtocolType              string `json:"protocolType" yaml:"protocolType"`
 	Interval                  string `json:"interval" yaml:"interval"`
 	CheckSites                []int  `json:"checkSites" yaml:"checkSites"`
 	RunTraceroute             string `json:"runTraceroute" yaml:"runTraceroute"`
-	FQDN                      string `json:"fqdn" yaml:"fqdn"`
-	Path                      string `json:"path" yaml:"path"`
-	SearchString              string `json:"searchString" yaml:"searchString"`
-	ConnectionTimeout         int    `json:"connectionTimeout" yaml:"connectionTimeout"`
-	ExpectedStatusCode        int    `json:"expectedStatusCode" yaml:"expectedStatusCode"`
-	UserAgent                 string `json:"userAgent" yaml:"userAgent"`
+	StringToSend              string `json:"stringToSend" yaml:"stringToSend"`
+	StringToReceive           string `json:"stringToReceive" yaml:"stringToReceive"`
 	Note                      string `json:"note" yaml:"note"`
-	ScheduleInterval          string `json:"scheduleInterval" yaml:"scheduleInterval"`
-	SSLPolicy                 string `json:"sslPolicy" yaml:"sslPolicy"`
 	UserID                    int    `json:"userId" yaml:"userId"`
 	MonitorIntervalPolicy     string `json:"monitorIntervalPolicy" yaml:"monitorIntervalPolicy"`
 	NotificationGroups        []int  `json:"notificationGroups" yaml:"notificationGroups"`
@@ -74,24 +55,24 @@ type SonarHTTPCheck struct {
 	VerificationPolicy        string `json:"verificationPolicy" yaml:"verificationPolicy"`
 }
 
-type ExpectedSonarHTTPCheck struct {
+type ExpectedSonarTCPCheck struct {
 	// Mapping of defined fields from parsed data to struct Field Names
 	definedFieldsMap map[string]string
-	SonarHTTPCheck
+	SonarTCPCheck
 	// This fields must be present when running update action
 	mandatoryStructFields []string
 }
 
 // UnmarshalYAML unmarshals the mesage and stores original fields
-func (ex *ExpectedSonarHTTPCheck) UnmarshalYAML(value *yaml.Node) error {
+func (ex *ExpectedSonarTCPCheck) UnmarshalYAML(value *yaml.Node) error {
 
-	// Unmarshall data into SonarHTTPCheck struct
-	var s SonarHTTPCheck
+	// Unmarshall data into SonarTCPCheck struct
+	var s SonarTCPCheck
 	err := value.Decode(&s)
 	if err != nil {
 		return err
 	}
-	ex.SonarHTTPCheck = s
+	ex.SonarTCPCheck = s
 
 	// Save specified fields
 	dm := make(map[string]interface{})
@@ -106,15 +87,15 @@ func (ex *ExpectedSonarHTTPCheck) UnmarshalYAML(value *yaml.Node) error {
 		definedFields[i] = k
 		i++
 	}
-	ex.definedFieldsMap = getFieldNamesMap(&ex.SonarHTTPCheck, "yaml", definedFields...)
+	ex.definedFieldsMap = getFieldNamesMap(&ex.SonarTCPCheck, "yaml", definedFields...)
 	ex.mandatoryStructFields = []string{"Name", "ProtocolType", "Port"}
 
 	return nil
 }
 
-// Compare compares ExpectedSonarHTTPCheck with active SonarHTTPCheck. Returns Status and data
-func (e *ExpectedSonarHTTPCheck) Compare(activeResources *[]SonarHTTPCheck) (ResourceAction, []byte, error) {
-	var active SonarHTTPCheck
+// Compare compares ExpectedSonarTCPCheck with active SonarTCPCheck. Returns Status and data
+func (e *ExpectedSonarTCPCheck) Compare(activeResources *[]SonarTCPCheck) (ResourceAction, []byte, error) {
+	var active SonarTCPCheck
 	el, found := e.GetActive(activeResources)
 	// el is a pointer, but reflect code expects real object
 	if found {
@@ -129,7 +110,7 @@ func (e *ExpectedSonarHTTPCheck) Compare(activeResources *[]SonarHTTPCheck) (Res
 		diffStructFields = maps.Values(e.definedFieldsMap)
 	} else {
 		action = ActionUpate
-		expectedValue := reflect.ValueOf(e.SonarHTTPCheck)
+		expectedValue := reflect.ValueOf(e.SonarTCPCheck)
 		activeValue := reflect.ValueOf(active)
 		for _, structFieldName := range e.definedFieldsMap {
 			fieldExpected := expectedValue.FieldByName(structFieldName)
@@ -154,7 +135,7 @@ func (e *ExpectedSonarHTTPCheck) Compare(activeResources *[]SonarHTTPCheck) (Res
 		}
 	}
 
-	dataBytes, err := toFilteredJSON(e.SonarHTTPCheck, diffJSONFields...)
+	dataBytes, err := toFilteredJSON(e.SonarTCPCheck, diffJSONFields...)
 	if err != nil {
 		return "", nil, err
 	}
@@ -162,7 +143,7 @@ func (e *ExpectedSonarHTTPCheck) Compare(activeResources *[]SonarHTTPCheck) (Res
 	return action, dataBytes, nil
 }
 
-func (e *ExpectedSonarHTTPCheck) GetActive(activeResources *[]SonarHTTPCheck) (*SonarHTTPCheck, bool) {
+func (e *ExpectedSonarTCPCheck) GetActive(activeResources *[]SonarTCPCheck) (*SonarTCPCheck, bool) {
 	for _, el := range *activeResources {
 		if el.Name == e.Name {
 			return &el, true
@@ -171,20 +152,20 @@ func (e *ExpectedSonarHTTPCheck) GetActive(activeResources *[]SonarHTTPCheck) (*
 	return nil, false
 }
 
-// GetSonarHTTPChecks returns active Sonar Checks
-func GetSonarHTTPChecks() (*[]SonarHTTPCheck, error) {
-	// Fetch HTTP checks
-	fmt.Println("Retrieving Sonar HTTP Checks...")
-	endpoint, err := url.JoinPath(sonarRESTAPIBaseURL, "http")
+// GetSonarTCPChecks returns active Sonar Checks
+func GetSonarTCPChecks() (*[]SonarTCPCheck, error) {
+	// Fetch TCP checks
+	fmt.Println("Retrieving Sonar TCP Checks...")
+	endpoint, err := url.JoinPath(sonarRESTAPIBaseURL, "tcp")
 	if err != nil {
 		return nil, err
 	}
 	data, err := makeAPIRequest("GET", endpoint, nil, 200)
 	if err != nil {
-		return nil, fmt.Errorf("unable to retrieve Sonar HTTP checks: %s", err)
+		return nil, fmt.Errorf("unable to retrieve Sonar TCP checks: %s", err)
 	}
 
-	checks := make([]SonarHTTPCheck, 0)
+	checks := make([]SonarTCPCheck, 0)
 	err = json.Unmarshal(data, &checks)
 	if err != nil {
 		return nil, err
@@ -192,8 +173,8 @@ func GetSonarHTTPChecks() (*[]SonarHTTPCheck, error) {
 	return &checks, nil
 }
 
-func CreateSonarHTTPCheck(payload []byte) error {
-	endpoint, err := url.JoinPath(sonarRESTAPIBaseURL, "http")
+func CreateSonarTCPCheck(payload []byte) error {
+	endpoint, err := url.JoinPath(sonarRESTAPIBaseURL, "tcp")
 	if err != nil {
 		return err
 	}
@@ -201,13 +182,13 @@ func CreateSonarHTTPCheck(payload []byte) error {
 	body, err := makeAPIRequest("POST", endpoint, payloadReader, 201)
 	if err != nil {
 		fmt.Println("  unexpected response. Details: " + string(body))
-		return fmt.Errorf("unable to create Sonar HTTP checks: %s", err)
+		return fmt.Errorf("unable to create Sonar TCP checks: %s", err)
 	}
 	return nil
 }
 
-func UpdateSonarHTTPCheck(payload []byte, id int) error {
-	endpoint, err := url.JoinPath(sonarRESTAPIBaseURL, "http", fmt.Sprint(id))
+func UpdateSonarTCPCheck(payload []byte, id int) error {
+	endpoint, err := url.JoinPath(sonarRESTAPIBaseURL, "tcp", fmt.Sprint(id))
 	if err != nil {
 		return err
 	}
@@ -215,13 +196,13 @@ func UpdateSonarHTTPCheck(payload []byte, id int) error {
 	body, err := makeAPIRequest("PUT", endpoint, payloadReader, 200)
 	if err != nil {
 		fmt.Println("  unexpected response. Details: " + string(body))
-		return fmt.Errorf("unable to update Sonar HTTP checks: %s", err)
+		return fmt.Errorf("unable to update Sonar TCP checks: %s", err)
 	}
 	return nil
 }
 
-func DeleteSonarHTTPCheck(payload []byte, id int) error {
-	endpoint, err := url.JoinPath(sonarRESTAPIBaseURL, "http", fmt.Sprint(id))
+func DeleteSonarTCPCheck(payload []byte, id int) error {
+	endpoint, err := url.JoinPath(sonarRESTAPIBaseURL, "tcp", fmt.Sprint(id))
 	if err != nil {
 		return err
 	}
@@ -229,7 +210,7 @@ func DeleteSonarHTTPCheck(payload []byte, id int) error {
 	body, err := makeAPIRequest("DELETE", endpoint, payloadReader, 200)
 	if err != nil {
 		fmt.Println("  unexpected response. Details: " + string(body))
-		return fmt.Errorf("unable to delete Sonar HTTP checks: %s", err)
+		return fmt.Errorf("unable to delete Sonar TCP checks: %s", err)
 	}
 	return nil
 }
