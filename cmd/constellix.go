@@ -16,6 +16,8 @@ const ActionDelete ResourceAction = "delete"
 const ActionUpate ResourceAction = "update"
 const ActionOK ResourceAction = "ok"
 
+const sonarRESTAPIBaseURL = "https://api.sonar.constellix.com/rest/api"
+
 // buildSecurityToken returns security token which is used when authenticating
 // Constellix REST API requests
 func buildSecurityToken() string {

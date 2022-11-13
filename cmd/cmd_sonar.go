@@ -29,7 +29,7 @@ var sonarDiscoverCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		cmd.SilenceUsage = true
 
-		httpChecks, err := GetSonarChecks()
+		httpChecks, err := GetSonarHTTPChecks()
 		if err != nil {
 			return err
 		}
@@ -84,6 +84,7 @@ var sonarSyncCmd = &cobra.Command{
 			return err
 		}
 
+		// Read configuration file
 		dataBytes, err := os.ReadFile(inputFile)
 		if err != nil {
 			return err
@@ -99,7 +100,8 @@ var sonarSyncCmd = &cobra.Command{
 			return nil
 		}
 
-		httpChecks, err := GetSonarChecks()
+		// Retrieve active configuration to compare
+		httpChecks, err := GetSonarHTTPChecks()
 		if err != nil {
 			return err
 		}
@@ -107,6 +109,7 @@ var sonarSyncCmd = &cobra.Command{
 		report := ansiterm.NewTabWriter(os.Stdout, 10, 0, 2, ' ', tabwriter.Debug)
 		defer report.Flush()
 
+		// Check if anything needs to be created / updated
 		for _, expectedCheck := range config {
 			fmt.Printf("Inspecting %q...\n", expectedCheck.Name)
 			action, data, err := expectedCheck.Compare(httpChecks)
@@ -123,7 +126,7 @@ var sonarSyncCmd = &cobra.Command{
 					fmt.Printf("  updating resource %q\n", expectedCheck.Name)
 					active, found := expectedCheck.GetActive(httpChecks)
 					if found {
-						err = UpdateSonarCheck(data, active.ID)
+						err = UpdateSonarHTTPCheck(data, active.ID)
 						if err != nil {
 							return err
 						}
@@ -132,7 +135,7 @@ var sonarSyncCmd = &cobra.Command{
 					}
 				case ActionCreate:
 					fmt.Printf("  creating new resource %q\n", expectedCheck.Name)
-					err = CreateSonarCheck(data)
+					err = CreateSonarHTTPCheck(data)
 					if err != nil {
 						return err
 					}
@@ -142,6 +145,7 @@ var sonarSyncCmd = &cobra.Command{
 			}
 		}
 
+		// Check if anything needs to be deleted
 		for _, existingCheck := range *httpChecks {
 			fmt.Printf("Inspecting %q...\n", existingCheck.Name)
 			for _, configCheck := range config {
@@ -153,7 +157,7 @@ var sonarSyncCmd = &cobra.Command{
 			fmt.Fprintf(report, "%s\t%s\t%s\n", colorAction(ActionDelete), existingCheck.Name, "")
 			if doit && allowRemoving {
 				fmt.Printf("  removing resource %q\n", existingCheck.Name)
-				err = DeleteSonarCheck(nil, existingCheck.ID)
+				err = DeleteSonarHTTPCheck(nil, existingCheck.ID)
 				if err != nil {
 					return err
 				}
@@ -162,7 +166,6 @@ var sonarSyncCmd = &cobra.Command{
 			}
 
 		}
-
 		return nil
 	},
 }

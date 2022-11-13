@@ -12,8 +12,6 @@ import (
 	yaml "gopkg.in/yaml.v3"
 )
 
-const sonarBaseURL = "https://api.sonar.constellix.com/rest/api"
-
 // SonarHTTPCheck represents sonar check record
 // Example:
 //
@@ -175,11 +173,11 @@ func (e *ExpectedSonarHTTPCheck) GetActive(activeResources *[]SonarHTTPCheck) (*
 	return nil, false
 }
 
-// GetSonarChecks returns active Sonar Checks
-func GetSonarChecks() (*[]SonarHTTPCheck, error) {
+// GetSonarHTTPChecks returns active Sonar Checks
+func GetSonarHTTPChecks() (*[]SonarHTTPCheck, error) {
 	// Fetch HTTP checks
 	fmt.Println("Retrieving Sonar HTTP Checks...")
-	endpoint, err := url.JoinPath(sonarBaseURL, "http")
+	endpoint, err := url.JoinPath(sonarRESTAPIBaseURL, "http")
 	if err != nil {
 		return nil, err
 	}
@@ -196,8 +194,8 @@ func GetSonarChecks() (*[]SonarHTTPCheck, error) {
 	return &httpChecks, nil
 }
 
-func CreateSonarCheck(payload []byte) error {
-	endpoint, err := url.JoinPath(sonarBaseURL, "http")
+func CreateSonarHTTPCheck(payload []byte) error {
+	endpoint, err := url.JoinPath(sonarRESTAPIBaseURL, "http")
 	if err != nil {
 		return err
 	}
@@ -210,8 +208,8 @@ func CreateSonarCheck(payload []byte) error {
 	return nil
 }
 
-func UpdateSonarCheck(payload []byte, id int) error {
-	endpoint, err := url.JoinPath(sonarBaseURL, "http", fmt.Sprint(id))
+func UpdateSonarHTTPCheck(payload []byte, id int) error {
+	endpoint, err := url.JoinPath(sonarRESTAPIBaseURL, "http", fmt.Sprint(id))
 	if err != nil {
 		return err
 	}
@@ -224,8 +222,8 @@ func UpdateSonarCheck(payload []byte, id int) error {
 	return nil
 }
 
-func DeleteSonarCheck(payload []byte, id int) error {
-	endpoint, err := url.JoinPath(sonarBaseURL, "http", fmt.Sprint(id))
+func DeleteSonarHTTPCheck(payload []byte, id int) error {
+	endpoint, err := url.JoinPath(sonarRESTAPIBaseURL, "http", fmt.Sprint(id))
 	if err != nil {
 		return err
 	}
