@@ -39,7 +39,7 @@ port: 80
 	activeList := make([]SonarHTTPCheck, 0)
 	activeList = append(activeList, SonarHTTPCheck{Name: "prod", Port: 443})
 	action, data, _ := expected.Compare(&activeList)
-	expectedData := `{"port":80}`
+	expectedData := `{"name":"prod","port":80}`
 	if action != ActionUpate {
 		t.Errorf("expected action '%v', got '%v'", ActionUpate, action)
 		return
@@ -98,7 +98,7 @@ checkSites: [1,2]
 		return
 	}
 
-	expectedData := `{"checkSites":[1,2]}`
+	expectedData := `{"checkSites":[1,2],"name":"prod"}`
 	if string(data) != expectedData {
 		t.Errorf("expected no data, got '%v'", string(data))
 		return
@@ -129,7 +129,7 @@ checkSites: [1,2]
 		return
 	}
 
-	expectedData := `{"checkSites":[1,2]}`
+	expectedData := `{"checkSites":[1,2],"name":"prod"}`
 	if string(data) != expectedData {
 		t.Errorf("expected no data, got '%v'", string(data))
 		return
