@@ -223,3 +223,17 @@ func UpdateSonarCheck(payload []byte, id int) error {
 	}
 	return nil
 }
+
+func DeleteSonarCheck(payload []byte, id int) error {
+	endpoint, err := url.JoinPath(sonarBaseURL, "http", fmt.Sprint(id))
+	if err != nil {
+		return err
+	}
+	payloadReader := bytes.NewReader(payload)
+	body, err := makeAPIRequest("DELETE", endpoint, payloadReader, 200)
+	if err != nil {
+		fmt.Println("  unexpected response. Details: " + string(body))
+		return fmt.Errorf("unable to delete Sonar HTTP checks: %s", err)
+	}
+	return nil
+}

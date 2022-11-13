@@ -118,9 +118,21 @@ var sonarSyncCmd = &cobra.Command{
 			if doit {
 				switch action {
 				case ActionOK:
+					break
 				case ActionDelete:
 					if allowRemoving {
-						fmt.Println("REMOVING")
+						fmt.Printf("  removing resource %q\n", expectedCheck.Name)
+						active, found := expectedCheck.GetActive(httpChecks)
+						if found {
+							err = DeleteSonarCheck(data, active.ID)
+							if err != nil {
+								return err
+							}
+						} else {
+							return fmt.Errorf("%q not found", expectedCheck.Name)
+						}
+					} else {
+						fmt.Printf("  pass --remove flag to remove %q\n", expectedCheck.Name)
 					}
 				case ActionUpate:
 					fmt.Printf("  updating resource %q\n", expectedCheck.Name)
