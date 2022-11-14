@@ -88,10 +88,6 @@ var sonarSyncCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		if len(config.SonarHTTPChecks) == 0 {
-			fmt.Println("configuration is empty, nothing to do")
-			return nil
-		}
 
 		// Retrieve active configuration to compare
 		httpChecks, err := GetSonarHTTPChecks()
@@ -159,6 +155,10 @@ var sonarSyncCmd = &cobra.Command{
 				fmt.Printf("  pass --remove flag to remove %q\n", existingCheck.Name)
 			}
 
+		}
+		report.Flush()
+		if !doit {
+			fmt.Println("Apply changes by passing --doit flag")
 		}
 		return nil
 	},
