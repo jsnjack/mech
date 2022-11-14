@@ -59,8 +59,6 @@ type ExpectedSonarTCPCheck struct {
 	// Mapping of defined fields from parsed data to struct Field Names
 	definedFieldsMap map[string]string
 	SonarTCPCheck
-	// This fields must be present when running update action
-	mandatoryStructFields []string
 }
 
 // UnmarshalYAML unmarshals the mesage and stores original fields
@@ -88,7 +86,6 @@ func (ex *ExpectedSonarTCPCheck) UnmarshalYAML(value *yaml.Node) error {
 		i++
 	}
 	ex.definedFieldsMap = getFieldNamesMap(&ex.SonarTCPCheck, "yaml", definedFields...)
-	ex.mandatoryStructFields = []string{"Name", "ProtocolType", "Port"}
 
 	return nil
 }
@@ -126,7 +123,7 @@ func (e *ExpectedSonarTCPCheck) Compare(activeResources *[]SonarTCPCheck) (Resou
 		}
 	}
 
-	diffStructFields = append(diffStructFields, e.mandatoryStructFields...)
+	//???
 
 	diffJSONFields := make([]string, 0)
 	for k, v := range e.definedFieldsMap {

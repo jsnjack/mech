@@ -78,8 +78,6 @@ type ExpectedSonarHTTPCheck struct {
 	// Mapping of defined fields from parsed data to struct Field Names
 	definedFieldsMap map[string]string
 	SonarHTTPCheck
-	// This fields must be present when running update action
-	mandatoryStructFields []string
 }
 
 // UnmarshalYAML unmarshals the mesage and stores original fields
@@ -107,7 +105,6 @@ func (ex *ExpectedSonarHTTPCheck) UnmarshalYAML(value *yaml.Node) error {
 		i++
 	}
 	ex.definedFieldsMap = getFieldNamesMap(&ex.SonarHTTPCheck, "yaml", definedFields...)
-	ex.mandatoryStructFields = []string{"Name", "ProtocolType", "Port"}
 
 	return nil
 }
