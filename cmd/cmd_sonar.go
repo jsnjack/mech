@@ -139,11 +139,12 @@ var sonarSyncCmd = &cobra.Command{
 		}
 
 		// Check if anything needs to be deleted
+	OUTER:
 		for _, existingCheck := range *httpChecks {
 			fmt.Printf("Inspecting %q...\n", existingCheck.Name)
 			for _, configCheck := range config.SonarHTTPChecks {
 				if configCheck.Name == existingCheck.Name {
-					continue
+					continue OUTER
 				}
 			}
 			fmt.Printf("  status: %s\n", ActionDelete)
