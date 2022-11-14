@@ -114,3 +114,13 @@ func makeAPIRequest(method string, url string, payload io.Reader, expectedStatus
 	}
 	return body, nil
 }
+
+func removeItems(sl []string, items ...string) []string {
+	new := make([]string, 0)
+	for _, el := range sl {
+		if !slices.Contains(items, el) {
+			new = append(new, el)
+		}
+	}
+	return new
+}

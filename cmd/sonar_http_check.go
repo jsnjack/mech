@@ -128,7 +128,7 @@ func (e *ExpectedSonarHTTPCheck) Compare(activeResources *[]SonarHTTPCheck) (Res
 		action = ActionCreate
 		diffStructFields = maps.Values(e.definedFieldsMap)
 	} else {
-		action = ActionUpate
+		action = ActionOK
 		expectedValue := reflect.ValueOf(e.SonarHTTPCheck)
 		activeValue := reflect.ValueOf(active)
 		for _, structFieldName := range e.definedFieldsMap {
@@ -136,16 +136,17 @@ func (e *ExpectedSonarHTTPCheck) Compare(activeResources *[]SonarHTTPCheck) (Res
 			fieldActive := activeValue.FieldByName(structFieldName)
 			// Compare field values
 			if !reflect.DeepEqual(fieldExpected.Interface(), fieldActive.Interface()) {
-				diffStructFields = append(diffStructFields, structFieldName)
+				action = ActionUpate
+				// Sonar blocks UPDATE requests with these parameters
+				diffStructFields = removeItems(maps.Values(e.definedFieldsMap), "Host", "IPVersion")
+				break
 			}
 		}
 
-		if len(diffStructFields) == 0 {
-			return ActionOK, nil, nil
+		if action == ActionOK {
+			return action, nil, nil
 		}
 	}
-
-	diffStructFields = append(diffStructFields, e.mandatoryStructFields...)
 
 	diffJSONFields := make([]string, 0)
 	for k, v := range e.definedFieldsMap {
@@ -226,7 +227,7 @@ func DeleteSonarHTTPCheck(payload []byte, id int) error {
 		return err
 	}
 	payloadReader := bytes.NewReader(payload)
-	body, err := makeAPIRequest("DELETE", endpoint, payloadReader, 200)
+	body, err := makeAPIRequest("DELETE", endpoint, payloadReader, 202)
 	if err != nil {
 		fmt.Println("  unexpected response. Details: " + string(body))
 		return fmt.Errorf("unable to delete Sonar HTTP checks: %s", err)
