@@ -6,14 +6,12 @@ import (
 )
 
 type IExpectedResource interface {
-	GetCreateData() ([]byte, error)
 	GetDefinedStructFieldNames() []string
 	GetResource() interface{}
 	GetUID() string
-	GetUpdateData() ([]byte, error)
-	SyncResourceCreate([]byte) error
+	SyncResourceCreate() error
 	SyncResourceDelete(int) error
-	SyncResourceUpdate([]byte, int) error
+	SyncResourceUpdate(int) (string, error)
 }
 
 type IActiveResource interface {
@@ -27,7 +25,7 @@ type ResourceMatcher interface {
 }
 
 // Compare compares expected resource with active resource
-func Compare(expected IExpectedResource, active IActiveResource) (ResourceAction, []byte, error) {
+func Compare(expected IExpectedResource, active IActiveResource) (ResourceAction, error) {
 	var action ResourceAction
 	if active == nil {
 		action = ActionCreate
@@ -45,27 +43,11 @@ func Compare(expected IExpectedResource, active IActiveResource) (ResourceAction
 				break
 			}
 		}
-
-		if action == ActionOK {
-			return action, nil, nil
-		}
 	}
 
 	switch action {
-	case ActionOK:
-		return action, nil, nil
-	case ActionCreate:
-		data, err := expected.GetCreateData()
-		if err != nil {
-			return "", nil, err
-		}
-		return action, data, nil
-	case ActionUpate:
-		data, err := expected.GetUpdateData()
-		if err != nil {
-			return "", nil, err
-		}
-		return action, data, nil
+	case ActionOK, ActionCreate, ActionUpate:
+		return action, nil
 	}
-	return "", nil, fmt.Errorf("unexpected action %q", action)
+	return "", fmt.Errorf("unexpected action %q", action)
 }

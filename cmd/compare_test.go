@@ -18,19 +18,14 @@ port: 80
 		return
 	}
 	active := SonarHTTPCheck{Name: "prod", Port: 443}
-	action, data, err := Compare(&expected, &active)
+	action, err := Compare(&expected, &active)
 
 	if err != nil {
 		t.Error(err)
 		return
 	}
-	expectedData := `{"name":"prod","port":80}`
 	if action != ActionUpate {
 		t.Errorf("expected action '%v', got '%v'", ActionUpate, action)
-		return
-	}
-	if string(data) != expectedData {
-		t.Errorf("expected %v, got %v", expectedData, string(data))
 		return
 	}
 }
@@ -47,7 +42,7 @@ port: 80
 		return
 	}
 	active := SonarHTTPCheck{Name: "prod", Port: 80}
-	action, data, err := Compare(&expected, &active)
+	action, err := Compare(&expected, &active)
 
 	if err != nil {
 		t.Error(err)
@@ -55,10 +50,6 @@ port: 80
 	}
 	if action != ActionOK {
 		t.Errorf("expected action '%v', got '%v'", ActionOK, action)
-		return
-	}
-	if data != nil {
-		t.Errorf("expected no data, got '%v'", data)
 		return
 	}
 }
@@ -75,18 +66,13 @@ checkSites: [1,2]
 		return
 	}
 	active := SonarHTTPCheck{Name: "prod", CheckSites: []int{2}}
-	action, data, err := Compare(&expected, &active)
+	action, err := Compare(&expected, &active)
 
 	if action != ActionUpate {
 		t.Errorf("expected action '%v', got '%v'", ActionUpate, action)
 		return
 	}
 
-	expectedData := `{"checkSites":[1,2],"name":"prod"}`
-	if string(data) != expectedData {
-		t.Errorf("expected no data, got '%v'", string(data))
-		return
-	}
 	if err != nil {
 		t.Errorf("expected no err, got '%v'", err)
 		return
@@ -105,18 +91,13 @@ checkSites: [1,2]
 		return
 	}
 	active := SonarHTTPCheck{Name: "prod", CheckSites: []int{2, 1}}
-	action, data, err := Compare(&expected, &active)
+	action, err := Compare(&expected, &active)
 
 	if action != ActionUpate {
 		t.Errorf("expected action '%v', got '%v'", ActionOK, action)
 		return
 	}
 
-	expectedData := `{"checkSites":[1,2],"name":"prod"}`
-	if string(data) != expectedData {
-		t.Errorf("expected no data, got '%v'", string(data))
-		return
-	}
 	if err != nil {
 		t.Errorf("expected no err, got '%v'", err)
 		return
@@ -135,19 +116,14 @@ port: 80
 		return
 	}
 	active := SonarHTTPCheck{Name: "prod", Port: 443, Interval: "HALFDAY"}
-	action, data, err := Compare(&expected, &active)
+	action, err := Compare(&expected, &active)
 
 	if err != nil {
 		t.Error(err)
 		return
 	}
-	expectedData := `{"name":"prod","port":80}`
 	if action != ActionUpate {
 		t.Errorf("expected action '%v', got '%v'", ActionUpate, action)
-		return
-	}
-	if string(data) != expectedData {
-		t.Errorf("expected %v, got %v", expectedData, string(data))
 		return
 	}
 }
@@ -165,19 +141,14 @@ unknown: 20
 		return
 	}
 	active := SonarHTTPCheck{Name: "prod", Port: 443, Interval: "HALFDAY"}
-	action, data, err := Compare(&expected, &active)
+	action, err := Compare(&expected, &active)
 
 	if err != nil {
 		t.Error(err)
 		return
 	}
-	expectedData := `{"name":"prod","port":80}`
 	if action != ActionUpate {
 		t.Errorf("expected action '%v', got '%v'", ActionUpate, action)
-		return
-	}
-	if string(data) != expectedData {
-		t.Errorf("expected %v, got %v", expectedData, string(data))
 		return
 	}
 }

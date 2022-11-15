@@ -85,35 +85,6 @@ func (ac *SonarHTTPCheck) GetConstellixID() int {
 	return ac.ID
 }
 
-func (ac *SonarHTTPCheck) SyncResourceUpdate(payload []byte, constellixID int) error {
-	fmt.Printf("  updating resource %q\n", ac.GetUID())
-	endpoint, err := url.JoinPath(sonarRESTAPIBaseURL, "http", fmt.Sprint(constellixID))
-	if err != nil {
-		return err
-	}
-	payloadReader := bytes.NewReader(payload)
-	body, err := makeAPIRequest("PUT", endpoint, payloadReader, 200)
-	if err != nil {
-		fmt.Println("  unexpected response. Details: " + string(body))
-		return fmt.Errorf("unable to update Sonar HTTP checks: %s", err)
-	}
-	return nil
-}
-
-func (ac *SonarHTTPCheck) SyncResourceDelete(constellixID int) error {
-	fmt.Printf("  removing resource %q\n", ac.GetUID())
-	endpoint, err := url.JoinPath(sonarRESTAPIBaseURL, "http", fmt.Sprint(constellixID))
-	if err != nil {
-		return err
-	}
-	body, err := makeAPIRequest("DELETE", endpoint, nil, 202)
-	if err != nil {
-		fmt.Println("  unexpected response. Details: " + string(body))
-		return fmt.Errorf("unable to delete Sonar HTTP checks: %s", err)
-	}
-	return nil
-}
-
 type ExpectedSonarHTTPCheck struct {
 	// Mapping of defined fields from parsed data to struct Field Names
 	definedFieldsMap map[string]string
@@ -182,14 +153,6 @@ func (ex *ExpectedSonarHTTPCheck) generateData(immutable ...string) ([]byte, err
 	return dataOutBytes, nil
 }
 
-func (ex *ExpectedSonarHTTPCheck) GetCreateData() ([]byte, error) {
-	return ex.generateData()
-}
-
-func (ex *ExpectedSonarHTTPCheck) GetUpdateData() ([]byte, error) {
-	return ex.generateData(ex.immutableFields...)
-}
-
 func (ex *ExpectedSonarHTTPCheck) GetResource() interface{} {
 	return ex.SonarHTTPCheck
 }
@@ -198,9 +161,46 @@ func (ex *ExpectedSonarHTTPCheck) GetUID() string {
 	return ex.Name
 }
 
-func (ex *ExpectedSonarHTTPCheck) SyncResourceCreate(payload []byte) error {
+func (ex *ExpectedSonarHTTPCheck) SyncResourceUpdate(constellixID int) (string, error) {
+	fmt.Printf("  updating resource %q\n", ex.GetUID())
+	endpoint, err := url.JoinPath(sonarRESTAPIBaseURL, "http", fmt.Sprint(constellixID))
+	if err != nil {
+		return "", err
+	}
+	payload, err := ex.generateData(ex.immutableFields...)
+	if err != nil {
+		return "", err
+	}
+	payloadReader := bytes.NewReader(payload)
+	body, err := makeAPIRequest("PUT", endpoint, payloadReader, 200)
+	if err != nil {
+		fmt.Println("  unexpected response. Details: " + string(body))
+		return "", fmt.Errorf("unable to update Sonar HTTP checks: %s", err)
+	}
+	return "", nil
+}
+
+func (ex *ExpectedSonarHTTPCheck) SyncResourceDelete(constellixID int) error {
+	fmt.Printf("  removing resource %q\n", ex.GetUID())
+	endpoint, err := url.JoinPath(sonarRESTAPIBaseURL, "http", fmt.Sprint(constellixID))
+	if err != nil {
+		return err
+	}
+	body, err := makeAPIRequest("DELETE", endpoint, nil, 202)
+	if err != nil {
+		fmt.Println("  unexpected response. Details: " + string(body))
+		return fmt.Errorf("unable to delete Sonar HTTP checks: %s", err)
+	}
+	return nil
+}
+
+func (ex *ExpectedSonarHTTPCheck) SyncResourceCreate() error {
 	fmt.Printf("  creating new resource %q\n", ex.GetUID())
 	endpoint, err := url.JoinPath(sonarRESTAPIBaseURL, "http")
+	if err != nil {
+		return err
+	}
+	payload, err := ex.generateData()
 	if err != nil {
 		return err
 	}

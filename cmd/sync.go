@@ -17,23 +17,24 @@ func Sync(expectedCollection, activeCollection []ResourceMatcher, doit, remove b
 		expectedResource := r.(IExpectedResource)
 		fmt.Printf("Inspecting %q...\n", expectedResource.GetUID())
 		activeResource := getMatchingResource(expectedResource, activeCollection)
-		action, data, err := Compare(expectedResource, activeResource)
+		action, err := Compare(expectedResource, activeResource)
 		if err != nil {
 			return err
 		}
 		fmt.Printf("  status: %s\n", action)
-		fmt.Fprintf(report, "%s\t%s\t%s\n", colorAction(action), expectedResource.GetUID(), string(data))
 		if doit {
 			switch action {
 			case ActionOK:
-				break
+				fmt.Fprintf(report, "%s\t%s\t%s\n", colorAction(action), expectedResource.GetUID(), "")
 			case ActionUpate:
-				err = expectedResource.SyncResourceUpdate(data, activeResource.GetConstellixID())
+				data, err := expectedResource.SyncResourceUpdate(activeResource.GetConstellixID())
+				fmt.Fprintf(report, "%s\t%s\t%s\n", colorAction(action), expectedResource.GetUID(), data)
 				if err != nil {
 					return err
 				}
 			case ActionCreate:
-				err = expectedResource.SyncResourceCreate(data)
+				err = expectedResource.SyncResourceCreate()
+				fmt.Fprintf(report, "%s\t%s\t%s\n", colorAction(action), expectedResource.GetUID(), "")
 				if err != nil {
 					return err
 				}
