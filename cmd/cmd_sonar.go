@@ -34,7 +34,7 @@ var sonarDiscoverCmd = &cobra.Command{
 			return err
 		}
 
-		fmt.Printf("Found %d Sonar HTTP Checks\n", len(*httpChecks))
+		fmt.Printf("Found %d Sonar HTTP Checks\n", len(httpChecks))
 		httpCheckBytes, err := yaml.Marshal(httpChecks)
 		if err != nil {
 			return err
@@ -94,6 +94,10 @@ var sonarSyncCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
+		resourceCollection := make([]ResourceMatch, len(httpChecks))
+		for i := range httpChecks {
+			resourceCollection[i] = httpChecks[i]
+		}
 
 		report := ansiterm.NewTabWriter(os.Stdout, 10, 0, 2, ' ', tabwriter.Debug)
 		defer report.Flush()
@@ -101,7 +105,8 @@ var sonarSyncCmd = &cobra.Command{
 		// Check if anything needs to be created / updated
 		for _, expectedCheck := range config.SonarHTTPChecks {
 			fmt.Printf("Inspecting %q...\n", expectedCheck.Name)
-			action, data, err := expectedCheck.Compare(httpChecks)
+			activeResource := getMatchingResource(&expectedCheck, resourceCollection)
+			action, data, err := Compare(&expectedCheck, activeResource)
 			if err != nil {
 				return err
 			}
@@ -113,14 +118,9 @@ var sonarSyncCmd = &cobra.Command{
 					break
 				case ActionUpate:
 					fmt.Printf("  updating resource %q\n", expectedCheck.Name)
-					active, found := expectedCheck.GetActive(httpChecks)
-					if found {
-						err = UpdateSonarHTTPCheck(data, active.ID)
-						if err != nil {
-							return err
-						}
-					} else {
-						return fmt.Errorf("%q not found", expectedCheck.Name)
+					err = UpdateSonarHTTPCheck(data, activeResource.GetConstellixID())
+					if err != nil {
+						return err
 					}
 				case ActionCreate:
 					fmt.Printf("  creating new resource %q\n", expectedCheck.Name)
@@ -136,7 +136,7 @@ var sonarSyncCmd = &cobra.Command{
 
 		// Check if anything needs to be deleted
 	OUTER:
-		for _, existingCheck := range *httpChecks {
+		for _, existingCheck := range httpChecks {
 			fmt.Printf("Inspecting %q...\n", existingCheck.Name)
 			for _, configCheck := range config.SonarHTTPChecks {
 				if configCheck.Name == existingCheck.Name {

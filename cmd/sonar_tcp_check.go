@@ -5,10 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/url"
-	"reflect"
 
-	"golang.org/x/exp/maps"
-	"golang.org/x/exp/slices"
 	yaml "gopkg.in/yaml.v3"
 )
 
@@ -88,56 +85,6 @@ func (ex *ExpectedSonarTCPCheck) UnmarshalYAML(value *yaml.Node) error {
 	ex.definedFieldsMap = getFieldNamesMap(&ex.SonarTCPCheck, "yaml", definedFields...)
 
 	return nil
-}
-
-// Compare compares ExpectedSonarTCPCheck with active SonarTCPCheck. Returns Status and data
-func (e *ExpectedSonarTCPCheck) Compare(activeResources *[]SonarTCPCheck) (ResourceAction, []byte, error) {
-	var active SonarTCPCheck
-	el, found := e.GetActive(activeResources)
-	// el is a pointer, but reflect code expects real object
-	if found {
-		active = *el
-	}
-
-	var action ResourceAction
-
-	diffStructFields := make([]string, 0)
-	if !found {
-		action = ActionCreate
-		diffStructFields = maps.Values(e.definedFieldsMap)
-	} else {
-		action = ActionUpate
-		expectedValue := reflect.ValueOf(e.SonarTCPCheck)
-		activeValue := reflect.ValueOf(active)
-		for _, structFieldName := range e.definedFieldsMap {
-			fieldExpected := expectedValue.FieldByName(structFieldName)
-			fieldActive := activeValue.FieldByName(structFieldName)
-			// Compare field values
-			if !reflect.DeepEqual(fieldExpected.Interface(), fieldActive.Interface()) {
-				diffStructFields = append(diffStructFields, structFieldName)
-			}
-		}
-
-		if len(diffStructFields) == 0 {
-			return ActionOK, nil, nil
-		}
-	}
-
-	//???
-
-	diffJSONFields := make([]string, 0)
-	for k, v := range e.definedFieldsMap {
-		if slices.Contains(diffStructFields, v) {
-			diffJSONFields = append(diffJSONFields, k)
-		}
-	}
-
-	dataBytes, err := toFilteredJSON(e.SonarTCPCheck, diffJSONFields...)
-	if err != nil {
-		return "", nil, err
-	}
-
-	return action, dataBytes, nil
 }
 
 func (e *ExpectedSonarTCPCheck) GetActive(activeResources *[]SonarTCPCheck) (*SonarTCPCheck, bool) {

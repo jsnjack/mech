@@ -1,14 +1,12 @@
 package cmd
 
 import (
-	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
+	"os"
 	"reflect"
 	"strings"
-
-	"golang.org/x/exp/slices"
 )
 
 const Reset = "\033[0m"
@@ -34,33 +32,6 @@ func colorAction(action ResourceAction) string {
 		start = Blue
 	}
 	return start + string(action) + Reset
-}
-
-// toFilteredJSON mashals struct into JSON bytes which contain only specified fields
-func toFilteredJSON(obj interface{}, includeFields ...string) ([]byte, error) {
-	objBytes, err := json.Marshal(obj)
-	if err != nil {
-		return nil, err
-	}
-
-	// Convert obj to map to simplify iteration
-	dataIn := map[string]interface{}{}
-	json.Unmarshal(objBytes, &dataIn)
-
-	dataOut := map[string]interface{}{}
-
-	// Create a new data obj which contains only fields which need to be included
-	for key, value := range dataIn {
-		if slices.Contains(includeFields, key) {
-			dataOut[key] = value
-		}
-	}
-
-	dataOutBytes, err := json.Marshal(dataOut)
-	if err != nil {
-		return nil, err
-	}
-	return dataOutBytes, nil
 }
 
 // getFieldNamesMap returns struct field names from their tags
@@ -115,12 +86,16 @@ func makeAPIRequest(method string, url string, payload io.Reader, expectedStatus
 	return body, nil
 }
 
-func removeItems(sl []string, items ...string) []string {
-	new := make([]string, 0)
-	for _, el := range sl {
-		if !slices.Contains(items, el) {
-			new = append(new, el)
+func getMatchingResource(item ResourceMatch, collection []ResourceMatch) ActiveResource {
+	for _, el := range collection {
+		if item.GetUID() == el.GetUID() {
+			ar, ok := el.(ActiveResource)
+			if !ok {
+				fmt.Printf("failed type assertion %q\n", ar)
+				os.Exit(1)
+			}
+			return ar
 		}
 	}
-	return new
+	return nil
 }
