@@ -5,14 +5,14 @@ import (
 	"reflect"
 )
 
-type ExpectedResource interface {
+type IExpectedResource interface {
 	GetDefinedStructFieldNames() []string
 	GetCreateData() ([]byte, error)
 	GetUpdateData() ([]byte, error)
 	GetResource() interface{}
 }
 
-type ActiveResource interface {
+type IActiveResource interface {
 	GetResource() interface{}
 	GetConstellixID() int
 }
@@ -22,7 +22,7 @@ type ResourceMatcher interface {
 }
 
 // Compare compares expected resource with active resource
-func Compare(expected ExpectedResource, active ActiveResource) (ResourceAction, []byte, error) {
+func Compare(expected IExpectedResource, active IActiveResource) (ResourceAction, []byte, error) {
 	var action ResourceAction
 	if active == nil {
 		action = ActionCreate
