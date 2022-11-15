@@ -6,21 +6,34 @@ import (
 	"strconv"
 )
 
+// IExpectedResource implements expected resource which is extracted from the
+// local configuration
 type IExpectedResource interface {
+	// List of fields defined in configuration file. Only this fields will be
+	// synchronized with the remote
 	GetDefinedStructFieldNames() []string
+	// Returns the resource itself
 	GetResource() interface{}
+	// Returns struct field name with which resources will be matched
 	GetResourceID() string
+	// Create a new active resource via API from expected resource
 	SyncResourceCreate() error
+	// Delete active resource
 	SyncResourceDelete(int) error
+	// Update active resource with all fields prsented in configuration but
+	// immutable ones
 	SyncResourceUpdate(int) error
 }
 
+// IActiveResource implements remote / active resource
 type IActiveResource interface {
+	// Returns ID of the resource in Constellix
 	GetConstellixID() int
 	GetResource() interface{}
 	GetResourceID() string
 }
 
+// ResourceMatcher implements resources to compare
 type ResourceMatcher interface {
 	GetResourceID() string
 }
