@@ -17,7 +17,7 @@ type ActiveResource interface {
 	GetConstellixID() int
 }
 
-type ResourceMatch interface {
+type ResourceMatcher interface {
 	GetUID() string
 }
 

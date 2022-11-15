@@ -86,7 +86,7 @@ func makeAPIRequest(method string, url string, payload io.Reader, expectedStatus
 	return body, nil
 }
 
-func getMatchingResource(item ResourceMatch, collection []ResourceMatch) ActiveResource {
+func getMatchingResource(item ResourceMatcher, collection []ResourceMatcher) ActiveResource {
 	for _, el := range collection {
 		if item.GetUID() == el.GetUID() {
 			ar, ok := el.(ActiveResource)

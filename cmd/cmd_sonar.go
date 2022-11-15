@@ -94,7 +94,7 @@ var sonarSyncCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		resourceCollection := make([]ResourceMatch, len(httpChecks))
+		resourceCollection := make([]ResourceMatcher, len(httpChecks))
 		for i := range httpChecks {
 			resourceCollection[i] = httpChecks[i]
 		}
