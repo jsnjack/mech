@@ -85,9 +85,9 @@ func (ac *SonarHTTPCheck) GetConstellixID() int {
 	return ac.ID
 }
 
-func (ac *SonarHTTPCheck) SyncResourceUpdate(payload []byte) error {
+func (ac *SonarHTTPCheck) SyncResourceUpdate(payload []byte, constellixID int) error {
 	fmt.Printf("  updating resource %q\n", ac.GetUID())
-	endpoint, err := url.JoinPath(sonarRESTAPIBaseURL, "http", fmt.Sprint(ac.ID))
+	endpoint, err := url.JoinPath(sonarRESTAPIBaseURL, "http", fmt.Sprint(constellixID))
 	if err != nil {
 		return err
 	}
@@ -100,9 +100,9 @@ func (ac *SonarHTTPCheck) SyncResourceUpdate(payload []byte) error {
 	return nil
 }
 
-func (ac *SonarHTTPCheck) SyncResourceDelete() error {
+func (ac *SonarHTTPCheck) SyncResourceDelete(constellixID int) error {
 	fmt.Printf("  removing resource %q\n", ac.GetUID())
-	endpoint, err := url.JoinPath(sonarRESTAPIBaseURL, "http", fmt.Sprint(ac.ID))
+	endpoint, err := url.JoinPath(sonarRESTAPIBaseURL, "http", fmt.Sprint(constellixID))
 	if err != nil {
 		return err
 	}

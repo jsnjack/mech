@@ -28,7 +28,7 @@ func Sync(expectedCollection, activeCollection []ResourceMatcher, doit, remove b
 			case ActionOK:
 				break
 			case ActionUpate:
-				err = activeResource.SyncResourceUpdate(data)
+				err = expectedResource.SyncResourceUpdate(data, activeResource.GetConstellixID())
 				if err != nil {
 					return err
 				}
@@ -48,6 +48,7 @@ OUTER:
 	for _, a := range activeCollection {
 		activeResource := a.(IActiveResource)
 		fmt.Printf("Inspecting %q...\n", activeResource.GetUID())
+		var expectedResource IExpectedResource
 		for _, expectedResource := range expectedCollection {
 			if expectedResource.GetUID() == activeResource.GetUID() {
 				continue OUTER
@@ -56,7 +57,7 @@ OUTER:
 		fmt.Printf("  status: %s\n", ActionDelete)
 		fmt.Fprintf(report, "%s\t%s\t%s\n", colorAction(ActionDelete), activeResource.GetUID(), "")
 		if doit && remove {
-			err := activeResource.SyncResourceDelete()
+			err := expectedResource.SyncResourceDelete(activeResource.GetConstellixID())
 			if err != nil {
 				return err
 			}

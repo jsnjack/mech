@@ -6,20 +6,20 @@ import (
 )
 
 type IExpectedResource interface {
-	GetDefinedStructFieldNames() []string
 	GetCreateData() ([]byte, error)
-	GetUpdateData() ([]byte, error)
+	GetDefinedStructFieldNames() []string
 	GetResource() interface{}
 	GetUID() string
+	GetUpdateData() ([]byte, error)
 	SyncResourceCreate([]byte) error
+	SyncResourceDelete(int) error
+	SyncResourceUpdate([]byte, int) error
 }
 
 type IActiveResource interface {
-	GetResource() interface{}
 	GetConstellixID() int
+	GetResource() interface{}
 	GetUID() string
-	SyncResourceUpdate([]byte) error
-	SyncResourceDelete() error
 }
 
 type ResourceMatcher interface {
