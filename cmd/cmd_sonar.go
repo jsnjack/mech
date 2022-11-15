@@ -6,9 +6,7 @@ package cmd
 import (
 	"fmt"
 	"os"
-	"text/tabwriter"
 
-	"github.com/juju/ansiterm"
 	"github.com/spf13/cobra"
 	yaml "gopkg.in/yaml.v3"
 )
@@ -89,74 +87,23 @@ var sonarSyncCmd = &cobra.Command{
 			return err
 		}
 
-		// Retrieve active configuration to compare
+		// Handle Sonar HTTP Checks
 		httpChecks, err := GetSonarHTTPChecks()
 		if err != nil {
 			return err
 		}
-		resourceCollection := make([]ResourceMatcher, len(httpChecks))
+		activeHTTPChecks := make([]ResourceMatcher, len(httpChecks))
 		for i := range httpChecks {
-			resourceCollection[i] = httpChecks[i]
+			activeHTTPChecks[i] = httpChecks[i]
 		}
-
-		report := ansiterm.NewTabWriter(os.Stdout, 10, 0, 2, ' ', tabwriter.Debug)
-		defer report.Flush()
-
-		// Check if anything needs to be created / updated
-		for _, expectedCheck := range config.SonarHTTPChecks {
-			fmt.Printf("Inspecting %q...\n", expectedCheck.Name)
-			activeResource := getMatchingResource(&expectedCheck, resourceCollection)
-			action, data, err := Compare(&expectedCheck, activeResource)
-			if err != nil {
-				return err
-			}
-			fmt.Printf("  status: %s\n", action)
-			fmt.Fprintf(report, "%s\t%s\t%s\n", colorAction(action), expectedCheck.Name, string(data))
-			if doit {
-				switch action {
-				case ActionOK:
-					break
-				case ActionUpate:
-					fmt.Printf("  updating resource %q\n", expectedCheck.Name)
-					err = UpdateSonarHTTPCheck(data, activeResource.GetConstellixID())
-					if err != nil {
-						return err
-					}
-				case ActionCreate:
-					fmt.Printf("  creating new resource %q\n", expectedCheck.Name)
-					err = CreateSonarHTTPCheck(data)
-					if err != nil {
-						return err
-					}
-				default:
-					return fmt.Errorf("unhandled action %q", action)
-				}
-			}
+		expectedHTTPChecks := make([]ResourceMatcher, len(config.SonarHTTPChecks))
+		for i := range config.SonarHTTPChecks {
+			expectedHTTPChecks[i] = &(config.SonarHTTPChecks)[i]
 		}
-
-		// Check if anything needs to be deleted
-	OUTER:
-		for _, existingCheck := range httpChecks {
-			fmt.Printf("Inspecting %q...\n", existingCheck.Name)
-			for _, configCheck := range config.SonarHTTPChecks {
-				if configCheck.Name == existingCheck.Name {
-					continue OUTER
-				}
-			}
-			fmt.Printf("  status: %s\n", ActionDelete)
-			fmt.Fprintf(report, "%s\t%s\t%s\n", colorAction(ActionDelete), existingCheck.Name, "")
-			if doit && allowRemoving {
-				fmt.Printf("  removing resource %q\n", existingCheck.Name)
-				err = DeleteSonarHTTPCheck(nil, existingCheck.ID)
-				if err != nil {
-					return err
-				}
-			} else {
-				fmt.Printf("  pass --remove flag to remove %q\n", existingCheck.Name)
-			}
-
+		err = Sync(expectedHTTPChecks, activeHTTPChecks, doit, allowRemoving)
+		if err != nil {
+			return err
 		}
-		report.Flush()
 		if !doit {
 			fmt.Println("Apply changes by passing --doit flag")
 		}

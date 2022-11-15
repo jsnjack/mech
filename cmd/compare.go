@@ -10,11 +10,16 @@ type IExpectedResource interface {
 	GetCreateData() ([]byte, error)
 	GetUpdateData() ([]byte, error)
 	GetResource() interface{}
+	GetUID() string
+	SyncResourceCreate([]byte) error
 }
 
 type IActiveResource interface {
 	GetResource() interface{}
 	GetConstellixID() int
+	GetUID() string
+	SyncResourceUpdate([]byte) error
+	SyncResourceDelete() error
 }
 
 type ResourceMatcher interface {
