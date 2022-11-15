@@ -169,15 +169,6 @@ func (ex *ExpectedSonarHTTPCheck) GetUID() string {
 	return ex.Name
 }
 
-func (e *ExpectedSonarHTTPCheck) GetActive(activeResources *[]SonarHTTPCheck) (*SonarHTTPCheck, bool) {
-	for _, el := range *activeResources {
-		if el.Name == e.Name {
-			return &el, true
-		}
-	}
-	return nil, false
-}
-
 // GetSonarHTTPChecks returns active Sonar Checks
 func GetSonarHTTPChecks() ([]*SonarHTTPCheck, error) {
 	// Fetch HTTP checks

@@ -87,15 +87,6 @@ func (ex *ExpectedSonarTCPCheck) UnmarshalYAML(value *yaml.Node) error {
 	return nil
 }
 
-func (e *ExpectedSonarTCPCheck) GetActive(activeResources *[]SonarTCPCheck) (*SonarTCPCheck, bool) {
-	for _, el := range *activeResources {
-		if el.Name == e.Name {
-			return &el, true
-		}
-	}
-	return nil, false
-}
-
 // GetSonarTCPChecks returns active Sonar Checks
 func GetSonarTCPChecks() (*[]SonarTCPCheck, error) {
 	// Fetch TCP checks
