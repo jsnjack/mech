@@ -9,7 +9,7 @@ import (
 type IExpectedResource interface {
 	GetDefinedStructFieldNames() []string
 	GetResource() interface{}
-	GetUID() string
+	GetResourceID() string
 	SyncResourceCreate() error
 	SyncResourceDelete(int) error
 	SyncResourceUpdate(int) error
@@ -18,11 +18,11 @@ type IExpectedResource interface {
 type IActiveResource interface {
 	GetConstellixID() int
 	GetResource() interface{}
-	GetUID() string
+	GetResourceID() string
 }
 
 type ResourceMatcher interface {
-	GetUID() string
+	GetResourceID() string
 }
 
 // Compare compares expected resource with active resource

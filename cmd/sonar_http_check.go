@@ -77,7 +77,7 @@ func (ac *SonarHTTPCheck) GetResource() interface{} {
 	return ac
 }
 
-func (ac *SonarHTTPCheck) GetUID() string {
+func (ac *SonarHTTPCheck) GetResourceID() string {
 	return ac.Name
 }
 
@@ -157,12 +157,12 @@ func (ex *ExpectedSonarHTTPCheck) GetResource() interface{} {
 	return ex.SonarHTTPCheck
 }
 
-func (ex *ExpectedSonarHTTPCheck) GetUID() string {
+func (ex *ExpectedSonarHTTPCheck) GetResourceID() string {
 	return ex.Name
 }
 
 func (ex *ExpectedSonarHTTPCheck) SyncResourceUpdate(constellixID int) error {
-	fmt.Printf("  updating resource %q\n", ex.GetUID())
+	fmt.Printf("  updating resource %q\n", ex.GetResourceID())
 	endpoint, err := url.JoinPath(sonarRESTAPIBaseURL, "http", fmt.Sprint(constellixID))
 	if err != nil {
 		return err
@@ -181,7 +181,7 @@ func (ex *ExpectedSonarHTTPCheck) SyncResourceUpdate(constellixID int) error {
 }
 
 func (ex *ExpectedSonarHTTPCheck) SyncResourceDelete(constellixID int) error {
-	fmt.Printf("  removing resource %q\n", ex.GetUID())
+	fmt.Printf("  removing resource %q\n", ex.GetResourceID())
 	endpoint, err := url.JoinPath(sonarRESTAPIBaseURL, "http", fmt.Sprint(constellixID))
 	if err != nil {
 		return err
@@ -195,7 +195,7 @@ func (ex *ExpectedSonarHTTPCheck) SyncResourceDelete(constellixID int) error {
 }
 
 func (ex *ExpectedSonarHTTPCheck) SyncResourceCreate() error {
-	fmt.Printf("  creating new resource %q\n", ex.GetUID())
+	fmt.Printf("  creating new resource %q\n", ex.GetResourceID())
 	endpoint, err := url.JoinPath(sonarRESTAPIBaseURL, "http")
 	if err != nil {
 		return err

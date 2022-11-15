@@ -89,7 +89,7 @@ func makeAPIRequest(method string, url string, payload io.Reader, expectedStatus
 
 func getMatchingResource(item ResourceMatcher, collection []ResourceMatcher) IActiveResource {
 	for _, el := range collection {
-		if item.GetUID() == el.GetUID() {
+		if item.GetResourceID() == el.GetResourceID() {
 			ar, ok := el.(IActiveResource)
 			if !ok {
 				fmt.Printf("failed type assertion %q\n", ar)
