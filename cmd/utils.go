@@ -18,6 +18,7 @@ const Purple = "\033[35m"
 const Cyan = "\033[36m"
 const Gray = "\033[37m"
 const White = "\033[97m"
+const Crossed = "\033[9m"
 
 func colorAction(action ResourceAction) string {
 	var start string

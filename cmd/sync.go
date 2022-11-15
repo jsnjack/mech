@@ -17,24 +17,23 @@ func Sync(expectedCollection, activeCollection []ResourceMatcher, doit, remove b
 		expectedResource := r.(IExpectedResource)
 		fmt.Printf("Inspecting %q...\n", expectedResource.GetUID())
 		activeResource := getMatchingResource(expectedResource, activeCollection)
-		action, err := Compare(expectedResource, activeResource)
+		action, details, err := Compare(expectedResource, activeResource)
 		if err != nil {
 			return err
 		}
 		fmt.Printf("  status: %s\n", action)
+		fmt.Fprintf(report, "%s\t%s\t%s\n", colorAction(action), expectedResource.GetUID(), details)
 		if doit {
 			switch action {
 			case ActionOK:
-				fmt.Fprintf(report, "%s\t%s\t%s\n", colorAction(action), expectedResource.GetUID(), "")
+				break
 			case ActionUpate:
-				data, err := expectedResource.SyncResourceUpdate(activeResource.GetConstellixID())
-				fmt.Fprintf(report, "%s\t%s\t%s\n", colorAction(action), expectedResource.GetUID(), data)
+				err := expectedResource.SyncResourceUpdate(activeResource.GetConstellixID())
 				if err != nil {
 					return err
 				}
 			case ActionCreate:
 				err = expectedResource.SyncResourceCreate()
-				fmt.Fprintf(report, "%s\t%s\t%s\n", colorAction(action), expectedResource.GetUID(), "")
 				if err != nil {
 					return err
 				}
@@ -56,7 +55,12 @@ OUTER:
 			}
 		}
 		fmt.Printf("  status: %s\n", ActionDelete)
-		fmt.Fprintf(report, "%s\t%s\t%s\n", colorAction(ActionDelete), activeResource.GetUID(), "")
+		fmt.Fprintf(
+			report, "%s\t%s\t%s\n",
+			colorAction(ActionDelete),
+			activeResource.GetUID(),
+			fmt.Sprintf("Resource ID %d", activeResource.GetConstellixID()),
+		)
 		if doit && remove {
 			err := expectedResource.SyncResourceDelete(activeResource.GetConstellixID())
 			if err != nil {

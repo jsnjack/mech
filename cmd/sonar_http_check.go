@@ -161,23 +161,23 @@ func (ex *ExpectedSonarHTTPCheck) GetUID() string {
 	return ex.Name
 }
 
-func (ex *ExpectedSonarHTTPCheck) SyncResourceUpdate(constellixID int) (string, error) {
+func (ex *ExpectedSonarHTTPCheck) SyncResourceUpdate(constellixID int) error {
 	fmt.Printf("  updating resource %q\n", ex.GetUID())
 	endpoint, err := url.JoinPath(sonarRESTAPIBaseURL, "http", fmt.Sprint(constellixID))
 	if err != nil {
-		return "", err
+		return err
 	}
 	payload, err := ex.generateData(ex.immutableFields...)
 	if err != nil {
-		return "", err
+		return err
 	}
 	payloadReader := bytes.NewReader(payload)
 	body, err := makeAPIRequest("PUT", endpoint, payloadReader, 200)
 	if err != nil {
 		fmt.Println("  unexpected response. Details: " + string(body))
-		return "", fmt.Errorf("unable to update Sonar HTTP checks: %s", err)
+		return fmt.Errorf("unable to update Sonar HTTP checks: %s", err)
 	}
-	return "", nil
+	return nil
 }
 
 func (ex *ExpectedSonarHTTPCheck) SyncResourceDelete(constellixID int) error {
