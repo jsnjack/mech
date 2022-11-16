@@ -7,7 +7,6 @@ import (
 	"net/url"
 
 	"golang.org/x/exp/maps"
-	"golang.org/x/exp/slices"
 	yaml "gopkg.in/yaml.v3"
 )
 
@@ -141,32 +140,6 @@ func (ex *ExpectedSonarHTTPCheck) GetDefinedStructFieldNames() []string {
 	return maps.Values(ex.definedFieldsMap)
 }
 
-func (ex *ExpectedSonarHTTPCheck) generateData(immutable ...string) ([]byte, error) {
-	objBytes, err := json.Marshal(ex)
-	if err != nil {
-		return nil, err
-	}
-
-	// Convert obj to map to simplify iteration
-	dataIn := map[string]interface{}{}
-	json.Unmarshal(objBytes, &dataIn)
-
-	dataOut := map[string]interface{}{}
-
-	// Create a new data obj which contains only fields which need to be included (JSON)
-	for key, value := range dataIn {
-		if slices.Contains(maps.Keys(ex.definedFieldsMap), key) && !slices.Contains(immutable, key) {
-			dataOut[key] = value
-		}
-	}
-
-	dataOutBytes, err := json.Marshal(dataOut)
-	if err != nil {
-		return nil, err
-	}
-	return dataOutBytes, nil
-}
-
 func (ex *ExpectedSonarHTTPCheck) GetResource() interface{} {
 	return ex.SonarHTTPCheck
 }
@@ -181,7 +154,7 @@ func (ex *ExpectedSonarHTTPCheck) SyncResourceUpdate(constellixID int) error {
 	if err != nil {
 		return err
 	}
-	payload, err := ex.generateData(ex.immutableFields...)
+	payload, err := generatePayload(ex, maps.Keys(ex.definedFieldsMap), ex.immutableFields)
 	if err != nil {
 		return err
 	}
@@ -200,7 +173,7 @@ func (ex *ExpectedSonarHTTPCheck) SyncResourceCreate() error {
 	if err != nil {
 		return err
 	}
-	payload, err := ex.generateData()
+	payload, err := generatePayload(ex, maps.Keys(ex.definedFieldsMap), nil)
 	if err != nil {
 		return err
 	}

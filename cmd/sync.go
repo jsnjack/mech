@@ -1,11 +1,13 @@
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"text/tabwriter"
 
 	"github.com/juju/ansiterm"
+	"golang.org/x/exp/slices"
 )
 
 func Sync(expectedCollection, activeCollection []ResourceMatcher, doit, remove bool) error {
@@ -73,4 +75,30 @@ func Sync(expectedCollection, activeCollection []ResourceMatcher, doit, remove b
 		}
 	}
 	return nil
+}
+
+func generatePayload(obj interface{}, definedFieldsJSON, immutableFieldsJSON []string) ([]byte, error) {
+	objBytes, err := json.Marshal(obj)
+	if err != nil {
+		return nil, err
+	}
+
+	// Convert obj to map to simplify iteration
+	dataIn := map[string]interface{}{}
+	json.Unmarshal(objBytes, &dataIn)
+
+	dataOut := map[string]interface{}{}
+
+	// Create a new data obj which contains only fields which need to be included (JSON)
+	for key, value := range dataIn {
+		if slices.Contains(definedFieldsJSON, key) && !slices.Contains(immutableFieldsJSON, key) {
+			dataOut[key] = value
+		}
+	}
+
+	dataOutBytes, err := json.Marshal(dataOut)
+	if err != nil {
+		return nil, err
+	}
+	return dataOutBytes, nil
 }
