@@ -30,7 +30,9 @@ func colorAction(action ResourceAction) string {
 	case ActionUpate:
 		start = Yellow
 	case ActionOK:
-		start = Blue
+		start = White
+	case ActionError:
+		start = Purple
 	}
 	return start + string(action) + Reset
 }
