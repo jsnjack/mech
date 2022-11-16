@@ -64,12 +64,12 @@ var sonarSyncCmd = &cobra.Command{
 		cmd.SilenceUsage = true
 
 		// Collect flags
-		inputFile, err := cmd.Flags().GetString("input")
+		configFile, err := cmd.Flags().GetString("config")
 		if err != nil {
 			return err
 		}
-		if inputFile == "" {
-			return fmt.Errorf("provide configuration file location via --input argument")
+		if configFile == "" {
+			return fmt.Errorf("provide configuration file location via --config argument")
 		}
 
 		doit, err := cmd.Flags().GetBool("doit")
@@ -82,7 +82,7 @@ var sonarSyncCmd = &cobra.Command{
 			return err
 		}
 
-		config, err := getConfig(inputFile)
+		config, err := getConfig(configFile)
 		if err != nil {
 			return err
 		}
@@ -122,7 +122,7 @@ func init() {
 	sonarDiscoverCmd.PersistentFlags().StringP("output", "o", "", "write output in yaml format to file, filepath")
 
 	sonarCmd.AddCommand(sonarSyncCmd)
-	sonarSyncCmd.PersistentFlags().StringP("input", "i", "", "configuration file, filepath")
+	sonarSyncCmd.PersistentFlags().StringP("config", "c", "", "configuration file, filepath")
 	sonarSyncCmd.PersistentFlags().Bool("doit", false, "apply planned changes")
 	sonarSyncCmd.PersistentFlags().Bool("remove", false, "remove resources which are not present in configuration file")
 }
