@@ -7,6 +7,7 @@ import (
 	"os"
 	"reflect"
 	"strings"
+	"time"
 )
 
 const Reset = "\033[0m"
@@ -63,7 +64,9 @@ OUTER:
 }
 
 func makeAPIRequest(method string, url string, payload io.Reader, expectedStatusCode int) (respBody []byte, err error) {
-	client := &http.Client{}
+	client := &http.Client{
+		Timeout: 10 * time.Second,
+	}
 	req, err := http.NewRequest(method, url, payload)
 
 	if err != nil {
