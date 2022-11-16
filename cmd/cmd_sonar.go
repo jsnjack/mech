@@ -9,7 +9,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var supportedSonarStaticResources = []string{"http"}
+var supportedSonarStaticResources = []string{"http", "tcp"}
 
 // sonarCmd represents the sonar command
 var sonarCmd = &cobra.Command{
@@ -49,6 +49,13 @@ var sonarDiscoverStaticCmd = &cobra.Command{
 			}
 			fmt.Printf("Found %d Sonar HTTP Checks\n", len(httpChecks))
 			return writeDiscoveryResult(httpChecks, outputFile)
+		case "tcp":
+			tcpChecks, err := GetSonarTCPChecks()
+			if err != nil {
+				return err
+			}
+			fmt.Printf("Found %d Sonar HTTP Checks\n", len(tcpChecks))
+			return writeDiscoveryResult(tcpChecks, outputFile)
 		default:
 			return fmt.Errorf(
 				"unsupported resource type: got %q, want one of %q",
@@ -98,6 +105,18 @@ var sonarSyncCmd = &cobra.Command{
 		activeHTTPChecks := toResourceMatcher(httpChecks)
 		expectedHTTPChecks := toResourceMatcher(config.SonarHTTPChecks)
 		err = Sync(expectedHTTPChecks, activeHTTPChecks, doit, allowRemoving)
+		if err != nil {
+			return err
+		}
+
+		// Handle Sonar TCP Checks
+		tcpChecks, err := GetSonarTCPChecks()
+		if err != nil {
+			return err
+		}
+		activeTCPChecks := toResourceMatcher(tcpChecks)
+		expectedTCPChecks := toResourceMatcher(config.SonarTCPChecks)
+		err = Sync(expectedTCPChecks, activeTCPChecks, doit, allowRemoving)
 		if err != nil {
 			return err
 		}

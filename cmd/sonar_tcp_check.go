@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"net/url"
 
+	"golang.org/x/exp/maps"
+	"golang.org/x/exp/slices"
 	yaml "gopkg.in/yaml.v3"
 )
 
@@ -52,14 +54,43 @@ type SonarTCPCheck struct {
 	VerificationPolicy        string `json:"verificationPolicy" yaml:"verificationPolicy"`
 }
 
+func (ac *SonarTCPCheck) GetResource() interface{} {
+	return ac
+}
+
+func (ac *SonarTCPCheck) GetResourceID() string {
+	return ac.Name
+}
+
+func (ac *SonarTCPCheck) GetConstellixID() int {
+	return ac.ID
+}
+
+func (ac *SonarTCPCheck) SyncResourceDelete(constellixID int) error {
+	fmt.Printf("  removing resource %q\n", ac.GetResourceID())
+	endpoint, err := url.JoinPath(sonarRESTAPIBaseURL, "tcp", fmt.Sprint(constellixID))
+	if err != nil {
+		return err
+	}
+	body, err := makeAPIRequest("DELETE", endpoint, nil, 202)
+	if err != nil {
+		fmt.Println("  unexpected response. Details: " + string(body))
+		return fmt.Errorf("unable to delete Sonar TCP checks: %s", err)
+	}
+	return nil
+}
+
 type ExpectedSonarTCPCheck struct {
 	// Mapping of defined fields from parsed data to struct Field Names
 	definedFieldsMap map[string]string
+	// List of immutable fields which can't be updated via API
+	immutableFields []string
 	SonarTCPCheck
 }
 
 // UnmarshalYAML unmarshals the mesage and stores original fields
 func (ex *ExpectedSonarTCPCheck) UnmarshalYAML(value *yaml.Node) error {
+	ex.immutableFields = []string{"host", "ipVersion"}
 
 	// Unmarshall data into SonarTCPCheck struct
 	var s SonarTCPCheck
@@ -83,47 +114,55 @@ func (ex *ExpectedSonarTCPCheck) UnmarshalYAML(value *yaml.Node) error {
 		i++
 	}
 	ex.definedFieldsMap = getFieldNamesMap(&ex.SonarTCPCheck, "yaml", definedFields...)
-
 	return nil
 }
 
-// GetSonarTCPChecks returns active Sonar Checks
-func GetSonarTCPChecks() (*[]SonarTCPCheck, error) {
-	// Fetch TCP checks
-	fmt.Println("Retrieving Sonar TCP Checks...")
-	endpoint, err := url.JoinPath(sonarRESTAPIBaseURL, "tcp")
-	if err != nil {
-		return nil, err
-	}
-	data, err := makeAPIRequest("GET", endpoint, nil, 200)
-	if err != nil {
-		return nil, fmt.Errorf("unable to retrieve Sonar TCP checks: %s", err)
-	}
-
-	checks := make([]SonarTCPCheck, 0)
-	err = json.Unmarshal(data, &checks)
-	if err != nil {
-		return nil, err
-	}
-	return &checks, nil
+// GetDefinedStructFieldNames returns list of defined struct fields from local configuration
+func (ex *ExpectedSonarTCPCheck) GetDefinedStructFieldNames() []string {
+	return maps.Values(ex.definedFieldsMap)
 }
 
-func CreateSonarTCPCheck(payload []byte) error {
-	endpoint, err := url.JoinPath(sonarRESTAPIBaseURL, "tcp")
+func (ex *ExpectedSonarTCPCheck) generateData(immutable ...string) ([]byte, error) {
+	objBytes, err := json.Marshal(ex)
+	if err != nil {
+		return nil, err
+	}
+
+	// Convert obj to map to simplify iteration
+	dataIn := map[string]interface{}{}
+	json.Unmarshal(objBytes, &dataIn)
+
+	dataOut := map[string]interface{}{}
+
+	// Create a new data obj which contains only fields which need to be included (JSON)
+	for key, value := range dataIn {
+		if slices.Contains(maps.Keys(ex.definedFieldsMap), key) && !slices.Contains(immutable, key) {
+			dataOut[key] = value
+		}
+	}
+
+	dataOutBytes, err := json.Marshal(dataOut)
+	if err != nil {
+		return nil, err
+	}
+	return dataOutBytes, nil
+}
+
+func (ex *ExpectedSonarTCPCheck) GetResource() interface{} {
+	return ex.SonarTCPCheck
+}
+
+func (ex *ExpectedSonarTCPCheck) GetResourceID() string {
+	return ex.Name
+}
+
+func (ex *ExpectedSonarTCPCheck) SyncResourceUpdate(constellixID int) error {
+	fmt.Printf("  updating resource %q\n", ex.GetResourceID())
+	endpoint, err := url.JoinPath(sonarRESTAPIBaseURL, "tcp", fmt.Sprint(constellixID))
 	if err != nil {
 		return err
 	}
-	payloadReader := bytes.NewReader(payload)
-	body, err := makeAPIRequest("POST", endpoint, payloadReader, 201)
-	if err != nil {
-		fmt.Println("  unexpected response. Details: " + string(body))
-		return fmt.Errorf("unable to create Sonar TCP checks: %s", err)
-	}
-	return nil
-}
-
-func UpdateSonarTCPCheck(payload []byte, id int) error {
-	endpoint, err := url.JoinPath(sonarRESTAPIBaseURL, "tcp", fmt.Sprint(id))
+	payload, err := ex.generateData(ex.immutableFields...)
 	if err != nil {
 		return err
 	}
@@ -136,16 +175,42 @@ func UpdateSonarTCPCheck(payload []byte, id int) error {
 	return nil
 }
 
-func DeleteSonarTCPCheck(payload []byte, id int) error {
-	endpoint, err := url.JoinPath(sonarRESTAPIBaseURL, "tcp", fmt.Sprint(id))
+func (ex *ExpectedSonarTCPCheck) SyncResourceCreate() error {
+	fmt.Printf("  creating new resource %q\n", ex.GetResourceID())
+	endpoint, err := url.JoinPath(sonarRESTAPIBaseURL, "tcp")
+	if err != nil {
+		return err
+	}
+	payload, err := ex.generateData()
 	if err != nil {
 		return err
 	}
 	payloadReader := bytes.NewReader(payload)
-	body, err := makeAPIRequest("DELETE", endpoint, payloadReader, 200)
+	body, err := makeAPIRequest("POST", endpoint, payloadReader, 201)
 	if err != nil {
 		fmt.Println("  unexpected response. Details: " + string(body))
-		return fmt.Errorf("unable to delete Sonar TCP checks: %s", err)
+		return fmt.Errorf("unable to create Sonar TCP checks: %s", err)
 	}
 	return nil
+}
+
+// GetSonarTCPChecks returns active Sonar Checks
+func GetSonarTCPChecks() ([]*SonarTCPCheck, error) {
+	// Fetch TCP checks
+	fmt.Println("Retrieving Sonar TCP Checks...")
+	endpoint, err := url.JoinPath(sonarRESTAPIBaseURL, "tcp")
+	if err != nil {
+		return nil, err
+	}
+	data, err := makeAPIRequest("GET", endpoint, nil, 200)
+	if err != nil {
+		return nil, fmt.Errorf("unable to retrieve Sonar TCP checks: %s", err)
+	}
+
+	checks := make([]*SonarTCPCheck, 0)
+	err = json.Unmarshal(data, &checks)
+	if err != nil {
+		return nil, err
+	}
+	return checks, nil
 }
