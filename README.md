@@ -9,10 +9,24 @@ mech
 
 ## Sonar
 - [ ] static configuration
-  - [x] http checks
-  - [x] tcp checks
+  - [x] http
+  - [x] tcp
+  - [ ] icmp
+  - [ ] dns
+  - [ ] ssl cert
+- [ ] runtime data
+  - [ ] http
+  - [ ] icmp
+  - [ ] dns
+  - [ ] tcp
+  - [ ] ssl cert
 
-## Configuration format
+## DNS
+ - [ ] Domains
+ - [ ] Domain records
+ - [ ] GeoProximity
+
+# Configuration format
 ```
 constellix:
   sonar:
@@ -24,4 +38,4 @@ constellix:
       - file3.yaml
 ```
 
-> Use `mech sonar static` command to print existing configuration
+> Use `mech sonar discover static -t http` command to print existing configuration
