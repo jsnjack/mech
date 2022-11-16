@@ -15,13 +15,17 @@ func Sync(expectedCollection, activeCollection []ResourceMatcher, doit, remove b
 	// Check if anything needs to be created / updated
 	for _, r := range expectedCollection {
 		expectedResource := r.(IExpectedResource)
-		fmt.Printf("Inspecting %q...\n", expectedResource.GetResourceID())
+		if rootVerbose {
+			fmt.Printf("Inspecting %q...\n", expectedResource.GetResourceID())
+		}
 		activeResource := getMatchingResource(expectedResource, activeCollection)
 		action, details, err := Compare(expectedResource, activeResource)
 		if err != nil {
 			return err
 		}
-		fmt.Printf("  status: %s\n", action)
+		if rootVerbose {
+			fmt.Printf("  status: %s\n", action)
+		}
 		fmt.Fprintf(report, "%s\t%s\t%s\n", colorAction(action), expectedResource.GetResourceID(), details)
 		if doit {
 			switch action {
@@ -44,32 +48,29 @@ func Sync(expectedCollection, activeCollection []ResourceMatcher, doit, remove b
 	}
 
 	// Check if anything needs to be deleted
-OUTER:
 	for _, a := range activeCollection {
 		activeResource := a.(IActiveResource)
-		fmt.Printf("Inspecting %q...\n", activeResource.GetResourceID())
-		var expectedResource IExpectedResource
-		for _, expectedResource := range expectedCollection {
-			if expectedResource.GetResourceID() == activeResource.GetResourceID() {
-				continue OUTER
+		if rootVerbose {
+			fmt.Printf("Inspecting %q...\n", activeResource.GetResourceID())
+		}
+		matched := getMatchingResource(activeResource, expectedCollection)
+		if matched == nil {
+			if rootVerbose {
+				fmt.Printf("  status: %s\n", ActionDelete)
+			}
+			fmt.Fprintf(
+				report, "%s\t%s\t%s\n",
+				colorAction(ActionDelete),
+				activeResource.GetResourceID(),
+				fmt.Sprintf("Resource ID %d", activeResource.GetConstellixID()),
+			)
+			if doit && remove {
+				err := activeResource.SyncResourceDelete(activeResource.GetConstellixID())
+				if err != nil {
+					return err
+				}
 			}
 		}
-		fmt.Printf("  status: %s\n", ActionDelete)
-		fmt.Fprintf(
-			report, "%s\t%s\t%s\n",
-			colorAction(ActionDelete),
-			activeResource.GetResourceID(),
-			fmt.Sprintf("Resource ID %d", activeResource.GetConstellixID()),
-		)
-		if doit && remove {
-			err := expectedResource.SyncResourceDelete(activeResource.GetConstellixID())
-			if err != nil {
-				return err
-			}
-		} else {
-			fmt.Printf("  pass --remove flag to remove %q\n", activeResource.GetResourceID())
-		}
-
 	}
 	return nil
 }

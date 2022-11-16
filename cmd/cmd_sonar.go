@@ -98,9 +98,20 @@ var sonarSyncCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
+		var message string
 		if !doit {
-			fmt.Println("Apply changes by passing --doit flag")
+			message += "apply changes by passing --doit flag"
 		}
+		if !allowRemoving {
+			if message != "" {
+				message += "; "
+			}
+			message += "allow removing of resources by passing --remove flag"
+		}
+		if message == "" {
+			message = "done"
+		}
+		fmt.Println(message)
 		return nil
 	},
 }

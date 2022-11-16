@@ -18,8 +18,6 @@ type IExpectedResource interface {
 	GetResourceID() string
 	// Create a new active resource via API from expected resource
 	SyncResourceCreate() error
-	// Delete active resource
-	SyncResourceDelete(int) error
 	// Update active resource with all fields prsented in configuration but
 	// immutable ones
 	SyncResourceUpdate(int) error
@@ -31,6 +29,8 @@ type IActiveResource interface {
 	GetConstellixID() int
 	GetResource() interface{}
 	GetResourceID() string
+	// Delete active resource
+	SyncResourceDelete(int) error
 }
 
 // ResourceMatcher implements resources to compare

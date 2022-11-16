@@ -36,6 +36,7 @@ func colorAction(action ResourceAction) string {
 }
 
 // getFieldNamesMap returns struct field names from their tags
+// JSON to struct
 func getFieldNamesMap(obj interface{}, tagType string, tags ...string) map[string]string {
 	res := make(map[string]string)
 	t := reflect.TypeOf(obj)

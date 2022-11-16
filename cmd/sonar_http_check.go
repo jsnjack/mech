@@ -85,6 +85,20 @@ func (ac *SonarHTTPCheck) GetConstellixID() int {
 	return ac.ID
 }
 
+func (ac *SonarHTTPCheck) SyncResourceDelete(constellixID int) error {
+	fmt.Printf("  removing resource %q\n", ac.GetResourceID())
+	endpoint, err := url.JoinPath(sonarRESTAPIBaseURL, "http", fmt.Sprint(constellixID))
+	if err != nil {
+		return err
+	}
+	body, err := makeAPIRequest("DELETE", endpoint, nil, 202)
+	if err != nil {
+		fmt.Println("  unexpected response. Details: " + string(body))
+		return fmt.Errorf("unable to delete Sonar HTTP checks: %s", err)
+	}
+	return nil
+}
+
 type ExpectedSonarHTTPCheck struct {
 	// Mapping of defined fields from parsed data to struct Field Names
 	definedFieldsMap map[string]string
@@ -95,7 +109,7 @@ type ExpectedSonarHTTPCheck struct {
 
 // UnmarshalYAML unmarshals the mesage and stores original fields
 func (ex *ExpectedSonarHTTPCheck) UnmarshalYAML(value *yaml.Node) error {
-	ex.immutableFields = []string{"Host", "IPVersion"}
+	ex.immutableFields = []string{"host", "ipVersion"}
 
 	// Unmarshall data into SonarHTTPCheck struct
 	var s SonarHTTPCheck
@@ -139,7 +153,7 @@ func (ex *ExpectedSonarHTTPCheck) generateData(immutable ...string) ([]byte, err
 
 	dataOut := map[string]interface{}{}
 
-	// Create a new data obj which contains only fields which need to be included
+	// Create a new data obj which contains only fields which need to be included (JSON)
 	for key, value := range dataIn {
 		if slices.Contains(maps.Keys(ex.definedFieldsMap), key) && !slices.Contains(immutable, key) {
 			dataOut[key] = value
@@ -176,20 +190,6 @@ func (ex *ExpectedSonarHTTPCheck) SyncResourceUpdate(constellixID int) error {
 	if err != nil {
 		fmt.Println("  unexpected response. Details: " + string(body))
 		return fmt.Errorf("unable to update Sonar HTTP checks: %s", err)
-	}
-	return nil
-}
-
-func (ex *ExpectedSonarHTTPCheck) SyncResourceDelete(constellixID int) error {
-	fmt.Printf("  removing resource %q\n", ex.GetResourceID())
-	endpoint, err := url.JoinPath(sonarRESTAPIBaseURL, "http", fmt.Sprint(constellixID))
-	if err != nil {
-		return err
-	}
-	body, err := makeAPIRequest("DELETE", endpoint, nil, 202)
-	if err != nil {
-		fmt.Println("  unexpected response. Details: " + string(body))
-		return fmt.Errorf("unable to delete Sonar HTTP checks: %s", err)
 	}
 	return nil
 }
