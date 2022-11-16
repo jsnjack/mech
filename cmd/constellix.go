@@ -15,6 +15,7 @@ const ActionCreate ResourceAction = "create"
 const ActionDelete ResourceAction = "delete"
 const ActionUpate ResourceAction = "update"
 const ActionOK ResourceAction = "ok"
+const ActionError ResourceAction = "error"
 
 const sonarRESTAPIBaseURL = "https://api.sonar.constellix.com/rest/api"
 

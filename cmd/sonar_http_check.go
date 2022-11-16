@@ -7,6 +7,7 @@ import (
 	"net/url"
 
 	"golang.org/x/exp/maps"
+	"golang.org/x/exp/slices"
 	yaml "gopkg.in/yaml.v3"
 )
 
@@ -138,6 +139,17 @@ func (ex *ExpectedSonarHTTPCheck) UnmarshalYAML(value *yaml.Node) error {
 // GetDefinedStructFieldNames returns list of defined struct fields from local configuration
 func (ex *ExpectedSonarHTTPCheck) GetDefinedStructFieldNames() []string {
 	return maps.Values(ex.definedFieldsMap)
+}
+
+// GetImmutableStructFields returns list of immutable struct fields
+func (ex *ExpectedSonarHTTPCheck) GetImmutableStructFields() []string {
+	var imf []string
+	for k, v := range ex.definedFieldsMap {
+		if slices.Contains(ex.immutableFields, k) {
+			imf = append(imf, v)
+		}
+	}
+	return imf
 }
 
 func (ex *ExpectedSonarHTTPCheck) GetResource() interface{} {

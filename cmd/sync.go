@@ -43,6 +43,9 @@ func Sync(expectedCollection, activeCollection []ResourceMatcher, doit, remove b
 				if err != nil {
 					return err
 				}
+			case ActionError:
+				report.Flush()
+				os.Exit(1)
 			default:
 				return fmt.Errorf("unhandled action %q", action)
 			}

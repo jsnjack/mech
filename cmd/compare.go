@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"reflect"
 	"strconv"
+
+	"golang.org/x/exp/slices"
 )
 
 // IExpectedResource implements expected resource which is extracted from the
@@ -12,6 +14,9 @@ type IExpectedResource interface {
 	// List of fields defined in configuration file. Only this fields will be
 	// synchronized with the remote
 	GetDefinedStructFieldNames() []string
+	// Constellix will reject requests with changes in immutable fields. Delete
+	// and create a new resource in this case
+	GetImmutableStructFields() []string
 	// Returns the resource itself
 	GetResource() interface{}
 	// Returns struct field name with which resources will be matched
@@ -55,15 +60,19 @@ func Compare(expected IExpectedResource, active IActiveResource) (ResourceAction
 			// Compare field values
 			if !reflect.DeepEqual(fieldExpected.Interface(), fieldActive.Interface()) {
 				action = ActionUpate
-				if details != "" {
-					details += ", "
-				}
-				details += fmt.Sprintf(
+				changeInfo := fmt.Sprintf(
 					"%s: %s%s",
 					structFieldName,
 					Red+Crossed+valueToString(fieldActive)+Reset,
 					Green+valueToString(fieldExpected)+Reset,
 				)
+				if slices.Contains(expected.GetImmutableStructFields(), structFieldName) {
+					return ActionError, fmt.Sprintf("found change in immutable field: %s", changeInfo), nil
+				}
+				if details != "" {
+					details += ", "
+				}
+				details += changeInfo
 			}
 		}
 	}
