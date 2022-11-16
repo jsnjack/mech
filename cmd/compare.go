@@ -75,6 +75,16 @@ func Compare(expected IExpectedResource, active IActiveResource) (ResourceAction
 	return "", "", fmt.Errorf("unexpected action %q", action)
 }
 
+func toResourceMatcher(collection interface{}) []ResourceMatcher {
+	v := reflect.ValueOf(collection)
+	// No check here, just panic!
+	new := make([]ResourceMatcher, v.Len())
+	for i := 0; i < v.Len(); i++ {
+		new[i] = v.Index(i).Interface().(ResourceMatcher)
+	}
+	return new
+}
+
 // valueToString returns a textual representation of the reflection value val.
 // Based on function from reflect library
 // https://cs.opensource.google/go/go/+/master:src/reflect/tostring_test.go

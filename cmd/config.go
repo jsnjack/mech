@@ -20,8 +20,8 @@ type SonarConfig struct {
 }
 
 type Config struct {
-	SonarHTTPChecks []ExpectedSonarHTTPCheck
-	SonarTCPChecks  []ExpectedSonarTCPCheck
+	SonarHTTPChecks []*ExpectedSonarHTTPCheck
+	SonarTCPChecks  []*ExpectedSonarTCPCheck
 }
 
 func getConfig(configFile string) (*Config, error) {
@@ -50,7 +50,7 @@ func getConfig(configFile string) (*Config, error) {
 		if err != nil {
 			return nil, err
 		}
-		var httpChecks []ExpectedSonarHTTPCheck
+		var httpChecks []*ExpectedSonarHTTPCheck
 		err = yaml.Unmarshal(configToReadBytes, &httpChecks)
 		if err != nil {
 			return nil, err
@@ -68,7 +68,7 @@ func getConfig(configFile string) (*Config, error) {
 		if err != nil {
 			return nil, err
 		}
-		var tcpChecks []ExpectedSonarTCPCheck
+		var tcpChecks []*ExpectedSonarTCPCheck
 		err = yaml.Unmarshal(configToReadBytes, &tcpChecks)
 		if err != nil {
 			return nil, err

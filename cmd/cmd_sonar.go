@@ -92,14 +92,8 @@ var sonarSyncCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		activeHTTPChecks := make([]ResourceMatcher, len(httpChecks))
-		for i := range httpChecks {
-			activeHTTPChecks[i] = httpChecks[i]
-		}
-		expectedHTTPChecks := make([]ResourceMatcher, len(config.SonarHTTPChecks))
-		for i := range config.SonarHTTPChecks {
-			expectedHTTPChecks[i] = &(config.SonarHTTPChecks)[i]
-		}
+		activeHTTPChecks := toResourceMatcher(httpChecks)
+		expectedHTTPChecks := toResourceMatcher(config.SonarHTTPChecks)
 		err = Sync(expectedHTTPChecks, activeHTTPChecks, doit, allowRemoving)
 		if err != nil {
 			return err
