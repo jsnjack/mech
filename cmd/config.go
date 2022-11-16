@@ -79,3 +79,20 @@ func getConfig(configFile string) (*Config, error) {
 	}
 	return &config, nil
 }
+
+func writeDiscoveryResult(collection interface{}, outputFile string) error {
+	dataBytes, err := yaml.Marshal(collection)
+	if err != nil {
+		return err
+	}
+	if outputFile != "" {
+		err = os.WriteFile(outputFile, dataBytes, 0644)
+		if err != nil {
+			return err
+		}
+		fmt.Printf("Sonar HTTP Checks saved to %s\n", outputFile)
+	} else {
+		fmt.Println(string(dataBytes))
+	}
+	return nil
+}
