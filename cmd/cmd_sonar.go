@@ -60,6 +60,15 @@ var sonarCmd = &cobra.Command{
   AFRICA:
     - Johannesburg, South Africa - [51, 52]
 	- Lagos, Nigeria - [53]
+- 'intervalPolicy' one of ["PARALLEL", "ONCEPERSITE", "ONCEPERREGION"]
+- 'notificationReportTimeout' - how ofthen to send notification report, one of:
+  - 0 - never
+  - 30 - every 30 minutes
+  - 60 - every hour
+  - 90 - every 90 minutes
+  - 120 - every 2 hours
+  - 240 - every 4 hours
+  - 1440 - every day
 `,
 }
 
