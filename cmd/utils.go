@@ -73,7 +73,7 @@ OUTER:
 
 func makeAPIRequest(method string, url string, payload io.Reader, expectedStatusCode int) (respBody []byte, err error) {
 	client := &http.Client{
-		Timeout: 10 * time.Second,
+		Timeout: 30 * time.Second,
 	}
 	req, err := http.NewRequest(method, url, payload)
 
