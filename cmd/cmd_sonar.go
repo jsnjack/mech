@@ -15,6 +15,52 @@ var supportedSonarStaticResources = []string{"http", "tcp"}
 var sonarCmd = &cobra.Command{
 	Use:   "sonar",
 	Short: "Sonar checks",
+	Long: `Extra information about Sonar API:
+- 'interval' one of ["THIRTYSECONDS", "ONEMINUTE", "TWOMINUTES", "THREEMINUTES",
+  "FOURMINUTES","FIVEMINUTES", "TENMINUTES", "HALFHOUR", "HALFDAY", "ONEDAY"]
+- 'checkSites':
+  NAEAST:
+    - Washington, DC, USA - [1, 32, 34, 35]
+	- New York, NY, USA - [2, 20]
+	- Atlanta, GA, USA - [3]
+	- Toronto, Canada - [23]
+	- Newark, NJ, USA - [26]
+	- Miami, FL, USA - [31]
+  NACENTRAL:
+    - Chicago, IL, USA - [4]
+	- Dallas, TX, USA - [5]
+  NAWEST:
+    - Los Angeles, CA, USA - [6]
+	- San Jose, CA, USA - [7]
+	- San Francisco, CA, USA - [25]
+	- Fremont, CA, USA - [27]
+	- Seattle, WA, USA - [40]
+  EUROPE:
+    - Vienna, Austria - [9]
+	- London, UK - [10, 21]
+	- Amsterdam, Netherlands - [11, 22, 42, 43, 41]
+	- Paris, France - [12]
+	- Milan, Italy - [28]
+	- Frankfurt, Germany - [29]
+	- Copenhagen, Denmark - [30]
+  ASIAPAC:
+    - Hong Kong - [13]
+	- Chennai, India - [14]
+	- Tokyo, Japan - [15, 50]
+	- Singapore - [16, 47]
+	- Bangalore, India - [24]
+  OCEANIA:
+    - Sydney, Australia - [17]
+	- Adelaide, Australia - [18]
+	- Auckland, New Zealand - [19]
+  SOUTHAMERICA:
+    - BOGOTA, COLOMBIA - [44]
+	- Sao Paulo, Brazil - [45]
+	- Santiago, Chile - [46]
+  AFRICA:
+    - Johannesburg, South Africa - [51, 52]
+	- Lagos, Nigeria - [53]
+`,
 }
 
 // sonarDiscoverCmd represents the discover sonar command
