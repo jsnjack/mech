@@ -79,6 +79,7 @@ func Compare(expected IExpectedResource, active IActiveResource) (ResourceAction
 	} else {
 		action = ActionOK
 		// reflect.Indirect deals with pointer
+		// TODO: check if it's a pointer
 		expectedValue := reflect.Indirect(reflect.ValueOf(expected.GetResource()))
 		activeValue := reflect.Indirect(reflect.ValueOf(active.GetResource()))
 		for _, structFieldName := range expected.GetDefinedStructFieldNames() {

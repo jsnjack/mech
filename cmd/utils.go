@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"os"
 	"reflect"
+	"regexp"
 	"strings"
 	"time"
 )
@@ -36,6 +36,12 @@ func colorAction(action ResourceAction) string {
 		start = Purple
 	}
 	return start + string(action) + Reset
+}
+
+var colorRe = regexp.MustCompile(`\x1b\[[0-9;]*m`)
+
+func stripBashColors(s string) string {
+	return colorRe.ReplaceAllString(s, "")
 }
 
 // getFieldNamesMap returns struct field names from their tags
@@ -102,15 +108,10 @@ func makeAPIRequest(method string, url string, payload io.Reader, expectedStatus
 	return body, nil
 }
 
-func getMatchingResource(item ResourceMatcher, collection []ResourceMatcher) IActiveResource {
+func getMatchingResource(item ResourceMatcher, collection []ResourceMatcher) interface{} {
 	for _, el := range collection {
 		if item.GetResourceID() == el.GetResourceID() {
-			ar, ok := el.(IActiveResource)
-			if !ok {
-				logger.Printf("failed type assertion %q\n", ar)
-				os.Exit(1)
-			}
-			return ar
+			return el
 		}
 	}
 	return nil

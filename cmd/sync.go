@@ -11,30 +11,47 @@ import (
 
 func Sync(expectedCollection, activeCollection []ResourceMatcher, doit, remove bool) error {
 	report := table.NewWriter()
+
+	// For tests, render data in csv format
 	defer func() {
 		if report.Length() > 0 {
-			report.Render()
+			if reportToTestBuffer {
+				report.RenderCSV()
+			} else {
+				report.Render()
+			}
 		} else {
-			fmt.Println("  nothing to do")
+			logger.Println("  nothing to do")
 		}
 	}()
 
-	report.SetOutputMirror(os.Stdout)
-	report.AppendHeader(table.Row{"Action", "Resource", "Details"})
+	if reportToTestBuffer {
+		// Skip header in tests
+		report.SetOutputMirror(testBuffer)
+	} else {
+		report.SetOutputMirror(os.Stdout)
+		report.AppendHeader(table.Row{"Action", "Resource", "Details"})
+	}
 
 	// Check if anything needs to be created / updated
 	for _, r := range expectedCollection {
 		expectedResource := r.(IExpectedResource)
 		if rootVerbose {
-			fmt.Printf("Inspecting %q...\n", expectedResource.GetResourceID())
+			logger.Printf("Inspecting %q...\n", expectedResource.GetResourceID())
 		}
-		activeResource := getMatchingResource(expectedResource, activeCollection)
+
+		matchedResource := getMatchingResource(expectedResource, activeCollection)
+		var activeResource IActiveResource
+		if matchedResource != nil {
+			activeResource = matchedResource.(IActiveResource)
+		}
+
 		action, diffs, err := Compare(expectedResource, activeResource)
 		if err != nil {
 			return err
 		}
 		if rootVerbose {
-			fmt.Printf("  status: %s\n", action)
+			logger.Printf("  status: %s\n", action)
 		}
 		if len(diffs) == 0 {
 			report.AppendRow(table.Row{

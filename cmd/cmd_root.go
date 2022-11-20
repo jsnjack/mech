@@ -4,6 +4,7 @@ Copyright © 2022 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
+	"bytes"
 	"log"
 	"os"
 
@@ -15,6 +16,8 @@ var constellixAPIKey string
 var constellixSecretKey string
 
 var logger *log.Logger
+var reportToTestBuffer bool
+var testBuffer *bytes.Buffer
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -36,6 +39,7 @@ func Execute() {
 
 func init() {
 	logger = log.New(os.Stdout, "", 0)
+	testBuffer = new(bytes.Buffer)
 	rootCmd.PersistentFlags().BoolVarP(&rootVerbose, "verbose", "v", false, "enable verbose logging")
 	constellixAPIKey = os.Getenv("CONSTELLIX_API_KEY")
 	constellixSecretKey = os.Getenv("CONSTELLIX_SECRET_KEY")
