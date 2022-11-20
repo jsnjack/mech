@@ -43,12 +43,14 @@ type ResourceMatcher interface {
 	GetResourceID() string
 }
 
+// FieldDiff represents difference between expected and active resource
 type FieldDiff struct {
 	FieldName string
 	OldValue  string
 	NewValue  string
 }
 
+// Return human readable string representation of the FieldDiff
 func (f *FieldDiff) String() string {
 	return fmt.Sprintf(
 		"%s: %s%s",
@@ -58,6 +60,7 @@ func (f *FieldDiff) String() string {
 	)
 }
 
+// getFieldDiff returns FieldDiff for the given field name
 func getFieldDiff(diffs []*FieldDiff, fieldName string) *FieldDiff {
 	for _, diff := range diffs {
 		if diff.FieldName == fieldName {
