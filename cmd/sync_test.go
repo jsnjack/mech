@@ -405,3 +405,42 @@ func Test_Sync_update_dry_immutable(t *testing.T) {
 		return
 	}
 }
+
+func Test_Generate_payload_full(t *testing.T) {
+	er := &testExpectedResource{
+		Name:          "Field1",
+		Port:          80,
+		definedFields: []string{"Port"},
+	}
+	payload, err := generatePayload(er, er.definedFields, nil)
+	if err != nil {
+		t.Errorf("unexpected error: %s", err)
+		return
+	}
+	expected := `{"Port":80}`
+	payloadStr := string(payload)
+	if payloadStr != expected {
+		t.Errorf("want %q, got %q", expected, payloadStr)
+		return
+	}
+}
+
+func Test_Generate_payload_immutable(t *testing.T) {
+	er := &testExpectedResource{
+		Name:            "Field1",
+		Port:            80,
+		definedFields:   []string{"Port", "Name"},
+		immutableFields: []string{"Port"},
+	}
+	payload, err := generatePayload(er, er.definedFields, er.immutableFields)
+	if err != nil {
+		t.Errorf("unexpected error: %s", err)
+		return
+	}
+	expected := `{"Name":"Field1"}`
+	payloadStr := string(payload)
+	if payloadStr != expected {
+		t.Errorf("want %q, got %q", expected, payloadStr)
+		return
+	}
+}
