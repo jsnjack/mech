@@ -67,14 +67,14 @@ func (ac *SonarTCPCheck) GetConstellixID() int {
 }
 
 func (ac *SonarTCPCheck) SyncResourceDelete(constellixID int) error {
-	fmt.Printf("  removing resource %q\n", ac.GetResourceID())
+	logger.Printf("  removing resource %q\n", ac.GetResourceID())
 	endpoint, err := url.JoinPath(sonarRESTAPIBaseURL, "tcp", fmt.Sprint(constellixID))
 	if err != nil {
 		return err
 	}
 	body, err := makeAPIRequest("DELETE", endpoint, nil, 202)
 	if err != nil {
-		fmt.Println("  unexpected response. Details: " + string(body))
+		logger.Println("  unexpected response. Details: " + string(body))
 		return fmt.Errorf("unable to delete Sonar TCP checks: %s", err)
 	}
 	return nil
@@ -142,7 +142,7 @@ func (ex *ExpectedSonarTCPCheck) GetResourceID() string {
 }
 
 func (ex *ExpectedSonarTCPCheck) SyncResourceUpdate(constellixID int) error {
-	fmt.Printf("  updating resource %q\n", ex.GetResourceID())
+	logger.Printf("  updating resource %q\n", ex.GetResourceID())
 	endpoint, err := url.JoinPath(sonarRESTAPIBaseURL, "tcp", fmt.Sprint(constellixID))
 	if err != nil {
 		return err
@@ -154,14 +154,14 @@ func (ex *ExpectedSonarTCPCheck) SyncResourceUpdate(constellixID int) error {
 	payloadReader := bytes.NewReader(payload)
 	body, err := makeAPIRequest("PUT", endpoint, payloadReader, 200)
 	if err != nil {
-		fmt.Println("  unexpected response. Details: " + string(body))
+		logger.Println("  unexpected response. Details: " + string(body))
 		return fmt.Errorf("unable to update Sonar TCP checks: %s", err)
 	}
 	return nil
 }
 
 func (ex *ExpectedSonarTCPCheck) SyncResourceCreate() error {
-	fmt.Printf("  creating new resource %q\n", ex.GetResourceID())
+	logger.Printf("  creating new resource %q\n", ex.GetResourceID())
 	endpoint, err := url.JoinPath(sonarRESTAPIBaseURL, "tcp")
 	if err != nil {
 		return err
@@ -173,7 +173,7 @@ func (ex *ExpectedSonarTCPCheck) SyncResourceCreate() error {
 	payloadReader := bytes.NewReader(payload)
 	body, err := makeAPIRequest("POST", endpoint, payloadReader, 201)
 	if err != nil {
-		fmt.Println("  unexpected response. Details: " + string(body))
+		logger.Println("  unexpected response. Details: " + string(body))
 		return fmt.Errorf("unable to create Sonar TCP checks: %s", err)
 	}
 	return nil
@@ -182,7 +182,7 @@ func (ex *ExpectedSonarTCPCheck) SyncResourceCreate() error {
 // GetSonarTCPChecks returns active Sonar Checks
 func GetSonarTCPChecks() ([]*SonarTCPCheck, error) {
 	// Fetch TCP checks
-	fmt.Println("Retrieving Sonar TCP Checks...")
+	logger.Println("Retrieving Sonar TCP Checks...")
 	endpoint, err := url.JoinPath(sonarRESTAPIBaseURL, "tcp")
 	if err != nil {
 		return nil, err

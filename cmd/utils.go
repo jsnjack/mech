@@ -75,15 +75,15 @@ func makeAPIRequest(method string, url string, payload io.Reader, expectedStatus
 	req.Header.Add("x-cns-security-token", buildSecurityToken())
 	req.Header.Add("Content-Type", "application/json")
 	if rootVerbose {
-		fmt.Printf("  requesting %s %s ...\n", method, url)
+		logger.Printf("  requesting %s %s ...\n", method, url)
 		if payload != nil {
 			payloadBytes, err := io.ReadAll(payload)
 			if err != nil {
 				return nil, err
 			}
-			fmt.Println("  payload: " + string(payloadBytes))
+			logger.Println("  payload: " + string(payloadBytes))
 		} else {
-			fmt.Println("  no payload")
+			logger.Println("  no payload")
 		}
 	}
 	res, err := client.Do(req)
@@ -107,7 +107,7 @@ func getMatchingResource(item ResourceMatcher, collection []ResourceMatcher) IAc
 		if item.GetResourceID() == el.GetResourceID() {
 			ar, ok := el.(IActiveResource)
 			if !ok {
-				fmt.Printf("failed type assertion %q\n", ar)
+				logger.Printf("failed type assertion %q\n", ar)
 				os.Exit(1)
 			}
 			return ar

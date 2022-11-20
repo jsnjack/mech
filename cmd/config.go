@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
 
@@ -27,7 +26,7 @@ type Config struct {
 func getConfig(configFile string) (*Config, error) {
 	// Read configuration file
 	if rootVerbose {
-		fmt.Printf("Reading configuration file %s...\n", configFile)
+		logger.Printf("Reading configuration file %s...\n", configFile)
 	}
 	dataBytes, err := os.ReadFile(configFile)
 	if err != nil {
@@ -44,7 +43,7 @@ func getConfig(configFile string) (*Config, error) {
 	for _, item := range mainConfig.Constellix.Sonar.HTTPChecksConfigFiles {
 		configToRead := filepath.Join(filepath.Dir(configFile), item)
 		if rootVerbose {
-			fmt.Printf("  reading %s...\n", configToRead)
+			logger.Printf("  reading %s...\n", configToRead)
 		}
 		configToReadBytes, err := os.ReadFile(configToRead)
 		if err != nil {
@@ -62,7 +61,7 @@ func getConfig(configFile string) (*Config, error) {
 	for _, item := range mainConfig.Constellix.Sonar.TCPChecksConfigFiles {
 		configToRead := filepath.Join(filepath.Dir(configFile), item)
 		if rootVerbose {
-			fmt.Printf("  reading %s...\n", configToRead)
+			logger.Printf("  reading %s...\n", configToRead)
 		}
 		configToReadBytes, err := os.ReadFile(configToRead)
 		if err != nil {
@@ -90,9 +89,9 @@ func writeDiscoveryResult(collection interface{}, outputFile string) error {
 		if err != nil {
 			return err
 		}
-		fmt.Printf("Sonar HTTP Checks saved to %s\n", outputFile)
+		logger.Printf("Sonar HTTP Checks saved to %s\n", outputFile)
 	} else {
-		fmt.Println(string(dataBytes))
+		logger.Println(string(dataBytes))
 	}
 	return nil
 }
