@@ -14,7 +14,6 @@ func Sync(expectedCollection, activeCollection []ResourceMatcher, doit, remove b
 	defer report.Render()
 
 	report.SetOutputMirror(os.Stdout)
-	rowMerge := table.RowConfig{AutoMerge: true}
 	report.AppendHeader(table.Row{"Action", "Resource", "Details"})
 
 	// Check if anything needs to be created / updated
@@ -36,10 +35,16 @@ func Sync(expectedCollection, activeCollection []ResourceMatcher, doit, remove b
 				colorAction(action), expectedResource.GetResourceID(), "",
 			})
 		} else {
-			for _, diff := range diffs {
-				report.AppendRow(table.Row{
-					colorAction(action), expectedResource.GetResourceID(), diff.String(),
-				}, rowMerge)
+			for idx, diff := range diffs {
+				if idx == 0 {
+					report.AppendRow(table.Row{
+						colorAction(action), expectedResource.GetResourceID(), diff.String(),
+					})
+				} else {
+					report.AppendRow(table.Row{
+						"", "", diff.String(),
+					})
+				}
 			}
 		}
 		report.AppendSeparator()
