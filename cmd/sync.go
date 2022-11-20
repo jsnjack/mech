@@ -4,15 +4,18 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"text/tabwriter"
 
-	"github.com/juju/ansiterm"
+	"github.com/jedib0t/go-pretty/v6/table"
 	"golang.org/x/exp/slices"
 )
 
 func Sync(expectedCollection, activeCollection []ResourceMatcher, doit, remove bool) error {
-	report := ansiterm.NewTabWriter(os.Stdout, 10, 0, 2, ' ', tabwriter.Debug)
-	defer report.Flush()
+	report := table.NewWriter()
+	defer report.Render()
+
+	report.SetOutputMirror(os.Stdout)
+	rowMerge := table.RowConfig{AutoMerge: true}
+	report.AppendHeader(table.Row{"Action", "Resource", "Details"})
 
 	// Check if anything needs to be created / updated
 	for _, r := range expectedCollection {
@@ -21,14 +24,25 @@ func Sync(expectedCollection, activeCollection []ResourceMatcher, doit, remove b
 			fmt.Printf("Inspecting %q...\n", expectedResource.GetResourceID())
 		}
 		activeResource := getMatchingResource(expectedResource, activeCollection)
-		action, details, err := Compare(expectedResource, activeResource)
+		action, diffs, err := Compare(expectedResource, activeResource)
 		if err != nil {
 			return err
 		}
 		if rootVerbose {
 			fmt.Printf("  status: %s\n", action)
 		}
-		fmt.Fprintf(report, "%s\t%s\t%s\n", colorAction(action), expectedResource.GetResourceID(), details)
+		if len(diffs) == 0 {
+			report.AppendRow(table.Row{
+				colorAction(action), expectedResource.GetResourceID(), "",
+			})
+		} else {
+			for _, diff := range diffs {
+				report.AppendRow(table.Row{
+					colorAction(action), expectedResource.GetResourceID(), diff.String(),
+				}, rowMerge)
+			}
+		}
+		report.AppendSeparator()
 		if doit {
 			switch action {
 			case ActionOK:
@@ -44,7 +58,7 @@ func Sync(expectedCollection, activeCollection []ResourceMatcher, doit, remove b
 					return err
 				}
 			case ActionError:
-				report.Flush()
+				report.Render()
 				os.Exit(1)
 			default:
 				return fmt.Errorf("unhandled action %q", action)
@@ -63,12 +77,12 @@ func Sync(expectedCollection, activeCollection []ResourceMatcher, doit, remove b
 			if rootVerbose {
 				fmt.Printf("  status: %s\n", ActionDelete)
 			}
-			fmt.Fprintf(
-				report, "%s\t%s\t%s\n",
+			report.AppendRow(table.Row{
 				colorAction(ActionDelete),
 				activeResource.GetResourceID(),
 				fmt.Sprintf("Resource ID %d", activeResource.GetConstellixID()),
-			)
+			})
+			report.AppendSeparator()
 			if doit && remove {
 				err := activeResource.SyncResourceDelete(activeResource.GetConstellixID())
 				if err != nil {

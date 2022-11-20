@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"strings"
 	"testing"
 
 	yaml "gopkg.in/yaml.v3"
@@ -170,19 +169,24 @@ host: 1.2.3.5
 	active := SonarHTTPCheck{Name: "prod", Port: 443, Host: "1.2.3.4"}
 	action, data, err := Compare(&expected, &active)
 
-	dataExpected := "found change in immutable field: Host: 1.2.3.41.2.3.5"
-
-	if err != nil {
-		t.Error(err)
-		return
-	}
+	errorExpected := "found change in immutable field: Host"
 	if action != ActionError {
 		t.Errorf("expected action '%v', got '%v'", ActionError, action)
 		return
 	}
-	dataNoColor := stripColor(data)
-	if dataExpected != dataNoColor {
-		t.Errorf("expected data '%v', got '%v'", dataExpected, dataNoColor)
+
+	if err == nil {
+		t.Errorf("expected err, got nil")
+		return
+	}
+
+	if err.Error() != errorExpected {
+		t.Errorf("expected err '%v', got '%v'", errorExpected, err.Error())
+		return
+	}
+
+	if len(data) != 0 {
+		t.Errorf("expected no data, got '%v'", data)
 		return
 	}
 }
@@ -200,10 +204,7 @@ interval: DAY
 		return
 	}
 	active := SonarHTTPCheck{Name: "prod", Port: 443, Interval: "NIGHT"}
-	action, data, err := Compare(&expected, &active)
-
-	dataExpected1 := "Port: 44380"
-	dateExpected2 := "Interval: NIGHTDAY"
+	action, diffs, err := Compare(&expected, &active)
 
 	if err != nil {
 		t.Error(err)
@@ -213,13 +214,13 @@ interval: DAY
 		t.Errorf("expected action '%v', got '%v'", ActionUpate, action)
 		return
 	}
-	dataNoColor := stripColor(data)
-	if strings.Contains(dataNoColor, dataExpected1) == false {
-		t.Errorf("expected to contain '%v', got '%v'", dataExpected1, dataNoColor)
+	portDiff := getFieldDiff(diffs, "Port")
+	if portDiff == nil {
+		t.Errorf("expected port diff, got nil")
 		return
 	}
-	if strings.Contains(dataNoColor, dateExpected2) == false {
-		t.Errorf("expected to contain '%v', got '%v'", dateExpected2, dataNoColor)
+	if portDiff.OldValue != "443" && portDiff.NewValue != "80" {
+		t.Errorf("unexpected diff %s, want old value 80, vew value 443", portDiff.String())
 		return
 	}
 }
@@ -235,7 +236,7 @@ port: 80
 		t.Error(err)
 		return
 	}
-	action, data, err := Compare(&expected, nil)
+	action, diffs, err := Compare(&expected, nil)
 
 	if err != nil {
 		t.Error(err)
@@ -246,8 +247,8 @@ port: 80
 		return
 	}
 
-	if data != "" {
-		t.Errorf("expected data '%v', got '%v'", "", data)
+	if len(diffs) != 0 {
+		t.Errorf("expected no diffs, got %v", diffs)
 		return
 	}
 }

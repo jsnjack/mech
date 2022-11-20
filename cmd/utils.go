@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"os"
 	"reflect"
-	"regexp"
 	"strings"
 	"time"
 )
@@ -21,8 +20,6 @@ const Cyan = "\033[36m"
 const Gray = "\033[37m"
 const White = "\033[97m"
 const Crossed = "\033[9m"
-
-var colorRe = regexp.MustCompile(`\033\[[0-9;]*m`)
 
 func colorAction(action ResourceAction) string {
 	var start string
@@ -39,11 +36,6 @@ func colorAction(action ResourceAction) string {
 		start = Purple
 	}
 	return start + string(action) + Reset
-}
-
-// Remove color codes from string, used in tests
-func stripColor(s string) string {
-	return colorRe.ReplaceAllString(s, "")
 }
 
 // getFieldNamesMap returns struct field names from their tags
@@ -84,6 +76,15 @@ func makeAPIRequest(method string, url string, payload io.Reader, expectedStatus
 	req.Header.Add("Content-Type", "application/json")
 	if rootVerbose {
 		fmt.Printf("  requesting %s %s ...\n", method, url)
+		if payload != nil {
+			payloadBytes, err := io.ReadAll(payload)
+			if err != nil {
+				return nil, err
+			}
+			fmt.Println("  payload: " + string(payloadBytes))
+		} else {
+			fmt.Println("  no payload")
+		}
 	}
 	res, err := client.Do(req)
 	if err != nil {
