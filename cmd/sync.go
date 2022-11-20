@@ -11,7 +11,13 @@ import (
 
 func Sync(expectedCollection, activeCollection []ResourceMatcher, doit, remove bool) error {
 	report := table.NewWriter()
-	defer report.Render()
+	defer func() {
+		if report.Length() > 0 {
+			report.Render()
+		} else {
+			fmt.Println("  nothing to do")
+		}
+	}()
 
 	report.SetOutputMirror(os.Stdout)
 	report.AppendHeader(table.Row{"Action", "Resource", "Details"})
