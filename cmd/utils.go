@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"os"
 	"reflect"
 	"regexp"
 	"strings"
@@ -21,8 +20,6 @@ const Cyan = "\033[36m"
 const Gray = "\033[37m"
 const White = "\033[97m"
 const Crossed = "\033[9m"
-
-var colorRe = regexp.MustCompile(`\033\[[0-9;]*m`)
 
 func colorAction(action ResourceAction) string {
 	var start string
@@ -41,8 +38,9 @@ func colorAction(action ResourceAction) string {
 	return start + string(action) + Reset
 }
 
-// Remove color codes from string, used in tests
-func stripColor(s string) string {
+var colorRe = regexp.MustCompile(`\x1b\[[0-9;]*m`)
+
+func stripBashColors(s string) string {
 	return colorRe.ReplaceAllString(s, "")
 }
 
@@ -83,7 +81,16 @@ func makeAPIRequest(method string, url string, payload io.Reader, expectedStatus
 	req.Header.Add("x-cns-security-token", buildSecurityToken())
 	req.Header.Add("Content-Type", "application/json")
 	if rootVerbose {
-		fmt.Printf("  requesting %s %s ...\n", method, url)
+		logger.Printf("  requesting %s %s ...\n", method, url)
+		if payload != nil {
+			payloadBytes, err := io.ReadAll(payload)
+			if err != nil {
+				return nil, err
+			}
+			logger.Println("  payload: " + string(payloadBytes))
+		} else {
+			logger.Println("  no payload")
+		}
 	}
 	res, err := client.Do(req)
 	if err != nil {
@@ -101,15 +108,10 @@ func makeAPIRequest(method string, url string, payload io.Reader, expectedStatus
 	return body, nil
 }
 
-func getMatchingResource(item ResourceMatcher, collection []ResourceMatcher) IActiveResource {
+func getMatchingResource(item ResourceMatcher, collection []ResourceMatcher) interface{} {
 	for _, el := range collection {
 		if item.GetResourceID() == el.GetResourceID() {
-			ar, ok := el.(IActiveResource)
-			if !ok {
-				fmt.Printf("failed type assertion %q\n", ar)
-				os.Exit(1)
-			}
-			return ar
+			return el
 		}
 	}
 	return nil

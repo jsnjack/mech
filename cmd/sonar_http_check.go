@@ -86,14 +86,14 @@ func (ac *SonarHTTPCheck) GetConstellixID() int {
 }
 
 func (ac *SonarHTTPCheck) SyncResourceDelete(constellixID int) error {
-	fmt.Printf("  removing resource %q\n", ac.GetResourceID())
+	logger.Printf("  removing resource %q\n", ac.GetResourceID())
 	endpoint, err := url.JoinPath(sonarRESTAPIBaseURL, "http", fmt.Sprint(constellixID))
 	if err != nil {
 		return err
 	}
 	body, err := makeAPIRequest("DELETE", endpoint, nil, 202)
 	if err != nil {
-		fmt.Println("  unexpected response. Details: " + string(body))
+		logger.Println("  unexpected response. Details: " + string(body))
 		return fmt.Errorf("unable to delete Sonar HTTP checks: %s", err)
 	}
 	return nil
@@ -161,7 +161,7 @@ func (ex *ExpectedSonarHTTPCheck) GetResourceID() string {
 }
 
 func (ex *ExpectedSonarHTTPCheck) SyncResourceUpdate(constellixID int) error {
-	fmt.Printf("  updating resource %q\n", ex.GetResourceID())
+	logger.Printf("  updating resource %q\n", ex.GetResourceID())
 	endpoint, err := url.JoinPath(sonarRESTAPIBaseURL, "http", fmt.Sprint(constellixID))
 	if err != nil {
 		return err
@@ -173,14 +173,14 @@ func (ex *ExpectedSonarHTTPCheck) SyncResourceUpdate(constellixID int) error {
 	payloadReader := bytes.NewReader(payload)
 	body, err := makeAPIRequest("PUT", endpoint, payloadReader, 200)
 	if err != nil {
-		fmt.Println("  unexpected response. Details: " + string(body))
+		logger.Println("  unexpected response. Details: " + string(body))
 		return fmt.Errorf("unable to update Sonar HTTP checks: %s", err)
 	}
 	return nil
 }
 
 func (ex *ExpectedSonarHTTPCheck) SyncResourceCreate() error {
-	fmt.Printf("  creating new resource %q\n", ex.GetResourceID())
+	logger.Printf("  creating new resource %q\n", ex.GetResourceID())
 	endpoint, err := url.JoinPath(sonarRESTAPIBaseURL, "http")
 	if err != nil {
 		return err
@@ -192,7 +192,7 @@ func (ex *ExpectedSonarHTTPCheck) SyncResourceCreate() error {
 	payloadReader := bytes.NewReader(payload)
 	body, err := makeAPIRequest("POST", endpoint, payloadReader, 201)
 	if err != nil {
-		fmt.Println("  unexpected response. Details: " + string(body))
+		logger.Println("  unexpected response. Details: " + string(body))
 		return fmt.Errorf("unable to create Sonar HTTP checks: %s", err)
 	}
 	return nil
@@ -201,7 +201,7 @@ func (ex *ExpectedSonarHTTPCheck) SyncResourceCreate() error {
 // GetSonarHTTPChecks returns active Sonar Checks
 func GetSonarHTTPChecks() ([]*SonarHTTPCheck, error) {
 	// Fetch HTTP checks
-	fmt.Println("Retrieving Sonar HTTP Checks...")
+	logger.Println("Retrieving Sonar HTTP Checks...")
 	endpoint, err := url.JoinPath(sonarRESTAPIBaseURL, "http")
 	if err != nil {
 		return nil, err

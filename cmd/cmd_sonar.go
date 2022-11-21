@@ -102,14 +102,14 @@ var sonarDiscoverStaticCmd = &cobra.Command{
 			if err != nil {
 				return err
 			}
-			fmt.Printf("Found %d Sonar HTTP Checks\n", len(httpChecks))
+			logger.Printf("Found %d Sonar HTTP Checks\n", len(httpChecks))
 			return writeDiscoveryResult(httpChecks, outputFile)
 		case "tcp":
 			tcpChecks, err := GetSonarTCPChecks()
 			if err != nil {
 				return err
 			}
-			fmt.Printf("Found %d Sonar HTTP Checks\n", len(tcpChecks))
+			logger.Printf("Found %d Sonar HTTP Checks\n", len(tcpChecks))
 			return writeDiscoveryResult(tcpChecks, outputFile)
 		default:
 			return fmt.Errorf(
@@ -188,7 +188,7 @@ var sonarSyncCmd = &cobra.Command{
 		if message == "" {
 			message = "done"
 		}
-		fmt.Println(message)
+		logger.Println(message)
 		return nil
 	},
 }

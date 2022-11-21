@@ -43,15 +43,43 @@ type ResourceMatcher interface {
 	GetResourceID() string
 }
 
+// FieldDiff represents difference between expected and active resource
+type FieldDiff struct {
+	FieldName string
+	OldValue  string
+	NewValue  string
+}
+
+// Return human readable string representation of the FieldDiff
+func (f *FieldDiff) String() string {
+	return fmt.Sprintf(
+		"%s: %s%s",
+		f.FieldName,
+		Red+Crossed+f.OldValue+Reset,
+		Green+f.NewValue+Reset,
+	)
+}
+
+// getFieldDiff returns FieldDiff for the given field name
+func getFieldDiff(diffs []*FieldDiff, fieldName string) *FieldDiff {
+	for _, diff := range diffs {
+		if diff.FieldName == fieldName {
+			return diff
+		}
+	}
+	return nil
+}
+
 // Compare compares expected resource with active resource
-func Compare(expected IExpectedResource, active IActiveResource) (ResourceAction, string, error) {
+func Compare(expected IExpectedResource, active IActiveResource) (ResourceAction, []*FieldDiff, error) {
 	var action ResourceAction
-	var details string
+	diffs := make([]*FieldDiff, 0)
 	if active == nil {
 		action = ActionCreate
 	} else {
 		action = ActionOK
 		// reflect.Indirect deals with pointer
+		// TODO: check if it's a pointer
 		expectedValue := reflect.Indirect(reflect.ValueOf(expected.GetResource()))
 		activeValue := reflect.Indirect(reflect.ValueOf(active.GetResource()))
 		for _, structFieldName := range expected.GetDefinedStructFieldNames() {
@@ -60,28 +88,23 @@ func Compare(expected IExpectedResource, active IActiveResource) (ResourceAction
 			// Compare field values
 			if !reflect.DeepEqual(fieldExpected.Interface(), fieldActive.Interface()) {
 				action = ActionUpate
-				changeInfo := fmt.Sprintf(
-					"%s: %s%s",
-					structFieldName,
-					Red+Crossed+valueToString(fieldActive)+Reset,
-					Green+valueToString(fieldExpected)+Reset,
-				)
+				diffs = append(diffs, &FieldDiff{
+					FieldName: structFieldName,
+					OldValue:  valueToString(fieldActive),
+					NewValue:  valueToString(fieldExpected),
+				})
 				if slices.Contains(expected.GetImmutableStructFields(), structFieldName) {
-					return ActionError, fmt.Sprintf("found change in immutable field: %s", changeInfo), nil
+					return ActionError, make([]*FieldDiff, 0), fmt.Errorf("found change in immutable field: %s", structFieldName)
 				}
-				if details != "" {
-					details += ", "
-				}
-				details += changeInfo
 			}
 		}
 	}
 
 	switch action {
 	case ActionOK, ActionCreate, ActionUpate:
-		return action, details, nil
+		return action, diffs, nil
 	}
-	return "", "", fmt.Errorf("unexpected action %q", action)
+	return "", make([]*FieldDiff, 0), fmt.Errorf("unexpected action %q", action)
 }
 
 func toResourceMatcher(collection interface{}) []ResourceMatcher {
