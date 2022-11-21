@@ -17,7 +17,7 @@ var sonarCmd = &cobra.Command{
 	Short: "Sonar checks",
 	Long: `Extra information about Sonar API:
 - 'interval' one of ["THIRTYSECONDS", "ONEMINUTE", "TWOMINUTES", "THREEMINUTES",
-  "FOURMINUTES","FIVEMINUTES", "TENMINUTES", "HALFHOUR", "HALFDAY", "ONEDAY"]
+  "FOURMINUTES","FIVEMINUTES", "TENMINUTES", "HALFHOUR", "HALFDAY", "DAY"]
 - 'checkSites':
   NAEAST:
     - Washington, DC, USA - [1, 32, 34, 35]
