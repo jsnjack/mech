@@ -10,6 +10,8 @@ import (
 	"time"
 )
 
+const rateLimitWaitTime = 5
+
 const Reset = "\033[0m"
 const Red = "\033[31m"
 const Green = "\033[32m"
@@ -92,18 +94,24 @@ func makeAPIRequest(method string, url string, payload io.Reader, expectedStatus
 			logger.Println("  no payload")
 		}
 	}
-	res, err := client.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return nil, err
 	}
-	defer res.Body.Close()
+	defer resp.Body.Close()
 
-	body, err := io.ReadAll(res.Body)
+	if resp.StatusCode == 429 {
+		logger.Printf("Rate limit exceeded, waiting %d second...\n", rateLimitWaitTime)
+		time.Sleep(time.Duration(rateLimitWaitTime) * time.Second)
+		return makeAPIRequest(method, url, payload, expectedStatusCode)
+	}
+
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
-	if res.StatusCode != expectedStatusCode {
-		return body, fmt.Errorf("unexpected status code %d, want %d", res.StatusCode, expectedStatusCode)
+	if resp.StatusCode != expectedStatusCode {
+		return body, fmt.Errorf("unexpected status code %d, want %d", resp.StatusCode, expectedStatusCode)
 	}
 	return body, nil
 }
