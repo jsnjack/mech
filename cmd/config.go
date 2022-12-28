@@ -56,6 +56,12 @@ func getConfig(configFile string) (*Config, error) {
 		}
 		if len(httpChecks) > 0 {
 			config.SonarHTTPChecks = append(config.SonarHTTPChecks, httpChecks...)
+			for _, check := range httpChecks {
+				err = check.Validate()
+				if err != nil {
+					return nil, err
+				}
+			}
 		}
 	}
 	for _, item := range mainConfig.Constellix.Sonar.TCPChecksConfigFiles {
@@ -74,6 +80,12 @@ func getConfig(configFile string) (*Config, error) {
 		}
 		if len(tcpChecks) > 0 {
 			config.SonarTCPChecks = append(config.SonarTCPChecks, tcpChecks...)
+			for _, check := range tcpChecks {
+				err = check.Validate()
+				if err != nil {
+					return nil, err
+				}
+			}
 		}
 	}
 	return &config, nil

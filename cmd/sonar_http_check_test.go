@@ -31,3 +31,28 @@ alien: yes
 		return
 	}
 }
+
+func TestExpectedSonarHTTPCheck_Validate_no_mandatory(t *testing.T) {
+	data := `
+name: prod
+port: 80
+`
+	var obj ExpectedSonarHTTPCheck
+	// Stub mandatory fields
+	obj.mandatoryFields = []string{"name", "port", "host"}
+	err := yaml.Unmarshal([]byte(data), &obj)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	err = obj.Validate()
+	if err == nil {
+		t.Error("expected error, got nil")
+		return
+	}
+	expected := "prod: mandatory field \"host\" is not defined"
+	if err != nil && err.Error() != expected {
+		t.Errorf("expected error %q, got %q", expected, err.Error())
+		return
+	}
+}

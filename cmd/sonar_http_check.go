@@ -104,12 +104,15 @@ type ExpectedSonarHTTPCheck struct {
 	definedFieldsMap map[string]string
 	// List of immutable fields which can't be updated via API
 	immutableFields []string
+	// List of mandatory fields which must be defined, used for validation
+	mandatoryFields []string
 	SonarHTTPCheck
 }
 
 // UnmarshalYAML unmarshals the mesage and stores original fields
 func (ex *ExpectedSonarHTTPCheck) UnmarshalYAML(value *yaml.Node) error {
 	ex.immutableFields = []string{"host", "ipVersion"}
+	ex.mandatoryFields = []string{"name", "host", "ipVersion", "port", "protocolType", "interval", "checkSites"}
 
 	// Unmarshall data into SonarHTTPCheck struct
 	var s SonarHTTPCheck
@@ -133,6 +136,17 @@ func (ex *ExpectedSonarHTTPCheck) UnmarshalYAML(value *yaml.Node) error {
 		i++
 	}
 	ex.definedFieldsMap = getFieldNamesMap(&ex.SonarHTTPCheck, "yaml", definedFields...)
+	return nil
+}
+
+// Validate performs simple validation of user provided data
+func (ex *ExpectedSonarHTTPCheck) Validate() error {
+	// Validate that all mandatory fields are present
+	for _, f := range ex.mandatoryFields {
+		if !slices.Contains(maps.Keys(ex.definedFieldsMap), f) {
+			return fmt.Errorf("%s: mandatory field %q is not defined", ex.Name, f)
+		}
+	}
 	return nil
 }
 

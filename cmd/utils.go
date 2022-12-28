@@ -47,7 +47,7 @@ func stripBashColors(s string) string {
 }
 
 // getFieldNamesMap returns struct field names from their tags
-// JSON to struct
+// (yaml/JSON keys to struct keys)
 func getFieldNamesMap(obj interface{}, tagType string, tags ...string) map[string]string {
 	res := make(map[string]string)
 	t := reflect.TypeOf(obj)
