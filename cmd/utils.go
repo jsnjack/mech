@@ -82,7 +82,9 @@ OUTER:
 	return res
 }
 
-func makeAPIRequest(method string, url string, payload io.Reader, expectedStatusCode int) (respBody []byte, err error) {
+// makeSimpleAPIRequest makes a simple API request, normally to the Sonar API as
+// it doesn't support pagination
+func makeSimpleAPIRequest(method string, url string, payload io.Reader, expectedStatusCode int) (respBody []byte, err error) {
 	client := &http.Client{
 		Timeout: 30 * time.Second,
 	}
@@ -114,7 +116,7 @@ func makeAPIRequest(method string, url string, payload io.Reader, expectedStatus
 	if resp.StatusCode == 429 {
 		logger.Printf("Rate limit exceeded, waiting %d second...\n", rateLimitWaitTime)
 		time.Sleep(time.Duration(rateLimitWaitTime) * time.Second)
-		return makeAPIRequest(method, url, payload, expectedStatusCode)
+		return makeSimpleAPIRequest(method, url, payload, expectedStatusCode)
 	}
 
 	body, err := io.ReadAll(resp.Body)

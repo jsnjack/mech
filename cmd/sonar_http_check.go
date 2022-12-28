@@ -92,7 +92,7 @@ func (ac *SonarHTTPCheck) SyncResourceDelete(constellixID int) error {
 	if err != nil {
 		return err
 	}
-	body, err := makeAPIRequest("DELETE", endpoint, nil, 202)
+	body, err := makeSimpleAPIRequest("DELETE", endpoint, nil, 202)
 	if err != nil {
 		logger.Println("  unexpected response. Details: " + string(body))
 		return fmt.Errorf("unable to delete Sonar HTTP checks: %s", err)
@@ -186,7 +186,7 @@ func (ex *ExpectedSonarHTTPCheck) SyncResourceUpdate(constellixID int) error {
 		return err
 	}
 	payloadReader := bytes.NewReader(payload)
-	body, err := makeAPIRequest("PUT", endpoint, payloadReader, 200)
+	body, err := makeSimpleAPIRequest("PUT", endpoint, payloadReader, 200)
 	if err != nil {
 		logger.Println("  unexpected response. Details: " + string(body))
 		return fmt.Errorf("unable to update Sonar HTTP checks: %s", err)
@@ -205,7 +205,7 @@ func (ex *ExpectedSonarHTTPCheck) SyncResourceCreate() error {
 		return err
 	}
 	payloadReader := bytes.NewReader(payload)
-	body, err := makeAPIRequest("POST", endpoint, payloadReader, 201)
+	body, err := makeSimpleAPIRequest("POST", endpoint, payloadReader, 201)
 	if err != nil {
 		logger.Println("  unexpected response. Details: " + string(body))
 		return fmt.Errorf("unable to create Sonar HTTP checks: %s", err)
@@ -221,7 +221,7 @@ func GetSonarHTTPChecks() ([]*SonarHTTPCheck, error) {
 	if err != nil {
 		return nil, err
 	}
-	data, err := makeAPIRequest("GET", endpoint, nil, 200)
+	data, err := makeSimpleAPIRequest("GET", endpoint, nil, 200)
 	if err != nil {
 		return nil, fmt.Errorf("unable to retrieve Sonar HTTP checks: %s", err)
 	}
@@ -242,7 +242,7 @@ func GetSonarHTTPCheckStatus(id int) (ResourceRuntimeStatus, error) {
 	if err != nil {
 		return "", err
 	}
-	data, err := makeAPIRequest("GET", endpoint, nil, 200)
+	data, err := makeSimpleAPIRequest("GET", endpoint, nil, 200)
 	if err != nil {
 		return "", fmt.Errorf("unable to retrieve Sonar HTTP check status: %s", err)
 	}
