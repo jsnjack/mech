@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/url"
+	"strconv"
 
 	"golang.org/x/exp/maps"
 	"golang.org/x/exp/slices"
@@ -231,4 +232,24 @@ func GetSonarHTTPChecks() ([]*SonarHTTPCheck, error) {
 		return nil, err
 	}
 	return checks, nil
+}
+
+// GetSonarHTTPCheckStatus returns active Sonar Check status using runtime endpoint
+func GetSonarHTTPCheckStatus(id int) (ResourceRuntimeStatus, error) {
+	// Fetch HTTP checks
+	logger.Println("Retrieving Sonar HTTP Check status...")
+	endpoint, err := url.JoinPath(sonarRESTAPIBaseURL, "http", strconv.Itoa(id), "status")
+	if err != nil {
+		return "", err
+	}
+	data, err := makeAPIRequest("GET", endpoint, nil, 200)
+	if err != nil {
+		return "", fmt.Errorf("unable to retrieve Sonar HTTP check status: %s", err)
+	}
+	status := RuntimeStatus{Status: "unknown"}
+	err = json.Unmarshal(data, &status)
+	if err != nil {
+		return "", err
+	}
+	return status.Status, nil
 }

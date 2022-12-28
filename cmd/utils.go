@@ -40,6 +40,17 @@ func colorAction(action ResourceAction) string {
 	return start + string(action) + Reset
 }
 
+func colorStatus(status ResourceRuntimeStatus) string {
+	var start string
+	switch status {
+	case StatusUp:
+		start = Green
+	case StatusDown:
+		start = Red
+	}
+	return start + string(status) + Reset
+}
+
 var colorRe = regexp.MustCompile(`\x1b\[[0-9;]*m`)
 
 func stripBashColors(s string) string {

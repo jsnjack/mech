@@ -5,16 +5,19 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 
+	"github.com/jedib0t/go-pretty/v6/table"
 	"github.com/spf13/cobra"
 )
 
 var supportedSonarStaticResources = []string{"http", "tcp"}
+var supportedSonarRuntimeResources = []string{"http"}
 
 // sonarCmd represents the sonar command
 var sonarCmd = &cobra.Command{
 	Use:   "sonar",
-	Short: "Sonar checks",
+	Short: "sonar checks",
 	Long: `Extra information about Sonar API:
 - 'interval' one of ["THIRTYSECONDS", "ONEMINUTE", "TWOMINUTES", "THREEMINUTES",
   "FOURMINUTES","FIVEMINUTES", "TENMINUTES", "HALFHOUR", "HALFDAY", "DAY"]
@@ -75,14 +78,14 @@ var sonarCmd = &cobra.Command{
 // sonarDiscoverCmd represents the discover sonar command
 var sonarDiscoverCmd = &cobra.Command{
 	Use:   "discover",
-	Short: "Fetch Sonar configuration",
+	Short: "fetch Sonar configuration",
 }
 
 // sonarDiscoverStaticCmd handle Sonar static commands
 // https://api-docs.constellix.com/#01165ee7-fccb-4c96-9fcd-77f329fe6505
 var sonarDiscoverStaticCmd = &cobra.Command{
 	Use:   "static",
-	Short: "Retrieve static configuration",
+	Short: "retrieve static configuration",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		cmd.SilenceUsage = true
 
@@ -121,10 +124,72 @@ var sonarDiscoverStaticCmd = &cobra.Command{
 	},
 }
 
+// sonarDiscoverRuntimeCmd handle Sonar runtime commands
+// https://api-docs.constellix.com/#aab92e59-f768-4f81-8f36-2b7cb79999d5
+var sonarDiscoverRuntimeCmd = &cobra.Command{
+	Use:   "runtime",
+	Short: "retrieve runtime check's status",
+	RunE: func(cmd *cobra.Command, args []string) error {
+		cmd.SilenceUsage = true
+
+		resourceType, err := cmd.Flags().GetString("type")
+		if err != nil {
+			return err
+		}
+
+		report := table.NewWriter()
+		// For tests, render data in csv format
+		defer func() {
+			if report.Length() > 0 {
+				if reportToTestBuffer {
+					report.RenderCSV()
+				} else {
+					report.Render()
+				}
+			} else {
+				logger.Println("  nothing to do")
+			}
+		}()
+
+		if reportToTestBuffer {
+			// Skip header in tests
+			report.SetOutputMirror(testBuffer)
+		} else {
+			report.SetOutputMirror(os.Stdout)
+			report.AppendHeader(table.Row{"Resource", "Type", "Status"})
+		}
+
+		switch resourceType {
+		case "http":
+			httpChecks, err := GetSonarHTTPChecks()
+			if err != nil {
+				return err
+			}
+			logger.Printf("Found %d Sonar HTTP Checks\n", len(httpChecks))
+			for _, check := range httpChecks {
+				status, err := GetSonarHTTPCheckStatus(check.ID)
+				if err != nil {
+					return err
+				}
+				report.AppendRow(table.Row{
+					check.Name, "http", colorStatus(status),
+				})
+			}
+			return nil
+		default:
+			return fmt.Errorf(
+				"unsupported resource type: got %q, want one of %q",
+				resourceType,
+				supportedSonarRuntimeResources,
+			)
+		}
+	},
+}
+
 // sonarSyncCmd represents the sync sonar command
 var sonarSyncCmd = &cobra.Command{
 	Use:   "sync",
-	Short: "Sync configuration to Constellix",
+	Short: "sync configuration to Constellix",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		cmd.SilenceUsage = true
 
@@ -201,6 +266,11 @@ func init() {
 	sonarDiscoverCmd.AddCommand(sonarDiscoverStaticCmd)
 	sonarDiscoverStaticCmd.PersistentFlags().StringP(
 		"type", "t", "http", fmt.Sprintf("specify static resource type, one of %q", supportedSonarStaticResources),
+	)
+
+	sonarDiscoverCmd.AddCommand(sonarDiscoverRuntimeCmd)
+	sonarDiscoverRuntimeCmd.PersistentFlags().StringP(
+		"type", "t", "http", fmt.Sprintf("specify runtime resource type, one of %q", supportedSonarRuntimeResources),
 	)
 
 	sonarCmd.AddCommand(sonarSyncCmd)

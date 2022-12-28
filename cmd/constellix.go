@@ -29,3 +29,14 @@ func buildSecurityToken() string {
 	hmacstr := base64.StdEncoding.EncodeToString(mac.Sum(nil))
 	return constellixAPIKey + ":" + hmacstr + ":" + timestamp
 }
+
+// Runtime status of a resource
+type ResourceRuntimeStatus string
+
+const StatusUp ResourceRuntimeStatus = "UP"
+const StatusDown ResourceRuntimeStatus = "DOWN"
+
+// RuntimeStatus is a struct that represents the runtime status of a resource
+type RuntimeStatus struct {
+	Status ResourceRuntimeStatus `json:"status"`
+}

@@ -44,7 +44,7 @@ func init() {
 	constellixAPIKey = os.Getenv("CONSTELLIX_API_KEY")
 	constellixSecretKey = os.Getenv("CONSTELLIX_SECRET_KEY")
 	if constellixAPIKey == "" || constellixSecretKey == "" {
-		logger.Println("Provide CONSTELLIX_API_KEY and CONSTELLIX_SECRET_KEY environmental variables")
+		logger.Println("provide CONSTELLIX_API_KEY and CONSTELLIX_SECRET_KEY environmental variables")
 		os.Exit(1)
 	}
 }
