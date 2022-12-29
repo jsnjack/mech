@@ -22,8 +22,7 @@ mech
   - [ ] ssl cert
 
 ## DNS
- - [ ] Domains
- - [ ] Domain records
+ - [x] Domain records
  - [ ] GeoProximity
 
 # Configuration format
