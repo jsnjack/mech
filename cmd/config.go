@@ -101,7 +101,7 @@ func writeDiscoveryResult(collection interface{}, outputFile string) error {
 		if err != nil {
 			return err
 		}
-		logger.Printf("Sonar HTTP Checks saved to %s\n", outputFile)
+		logger.Printf("Discovered items saved to %s\n", outputFile)
 	} else {
 		logger.Println(string(dataBytes))
 	}
