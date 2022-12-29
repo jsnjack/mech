@@ -30,19 +30,18 @@ func GetDNSDomains() ([]*DNSDomain, error) {
 	if err != nil {
 		return nil, err
 	}
-	data, err := makeSimpleAPIRequest("GET", endpoint, nil, 200)
+	data, err := makev4APIRequest("GET", endpoint, nil, 200)
 	if err != nil {
 		return nil, fmt.Errorf("unable to retrieve DNS domains list: %s", err)
 	}
-	resp := DNSv4Response{}
-	err = json.Unmarshal(data, &resp)
-	if err != nil {
-		return nil, err
-	}
 	var domains []*DNSDomain
-	err = json.Unmarshal(resp.Data, &domains)
-	if err != nil {
-		return nil, err
+	for _, item := range data {
+		tmpDomains := []*DNSDomain{}
+		err = json.Unmarshal(item, &tmpDomains)
+		if err != nil {
+			return nil, err
+		}
+		domains = append(domains, tmpDomains...)
 	}
 	return domains, nil
 }

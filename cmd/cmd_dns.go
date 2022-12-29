@@ -118,6 +118,95 @@ var dnsDiscoverDomainsCmd = &cobra.Command{
 	},
 }
 
+// dnsSyncCmd represents the sync DNS command
+var dnsSyncCmd = &cobra.Command{
+	Use:   "sync",
+	Short: "sync configuration to Constellix",
+	RunE: func(cmd *cobra.Command, args []string) error {
+		cmd.SilenceUsage = true
+
+		// Collect flags
+		configFile, err := cmd.Flags().GetString("config")
+		if err != nil {
+			return err
+		}
+		if configFile == "" {
+			return fmt.Errorf("provide configuration file location via --config argument")
+		}
+
+		doit, err := cmd.Flags().GetBool("doit")
+		if err != nil {
+			return err
+		}
+
+		allowRemoving, err := cmd.Flags().GetBool("remove")
+		if err != nil {
+			return err
+		}
+
+		config, err := getConfig(configFile)
+		if err != nil {
+			return err
+		}
+
+		if len(config.DNS) == 0 {
+			logger.Println("No DNS configuration found")
+			return nil
+		}
+
+		domains, err := GetDNSDomains()
+		if err != nil {
+			return err
+		}
+
+		for domainName := range config.DNS {
+			var domainID int
+
+			for _, domain := range domains {
+				if domain.Name == domainName {
+					domainID = domain.ID
+				}
+			}
+
+			if domainID == 0 {
+				return fmt.Errorf("domain %s not found", domainName)
+			} else {
+				if rootVerbose {
+					logger.Printf("domain %s found with ID %d", domainName, domainID)
+				}
+			}
+			records, err := GetDNSRecords(domainID)
+			if err != nil {
+				return err
+			}
+			for _, item := range config.DNS[domainName] {
+				item.domainIDInConstellix = domainID
+			}
+			activeRecords := toResourceMatcher(records)
+			expectedRecords := toResourceMatcher(config.DNS[domainName])
+			err = Sync(expectedRecords, activeRecords, doit, allowRemoving)
+			if err != nil {
+				return err
+			}
+		}
+		var message string
+		if !doit {
+			message += "apply changes by passing --doit flag"
+		}
+		if !allowRemoving {
+			if message != "" {
+				message += "; "
+			}
+			message += "allow removing of resources by passing --remove flag"
+		}
+		if message == "" {
+			message = "done"
+		}
+		logger.Println(message)
+		return nil
+	},
+}
+
 func init() {
 	rootCmd.AddCommand(dnsCmd)
 	dnsCmd.AddCommand(dnsDiscoverCmd)
@@ -125,4 +214,9 @@ func init() {
 	dnsDiscoverCmd.PersistentFlags().StringP("output", "o", "", "write output in yaml format to file, filepath")
 
 	dnsDiscoverCmd.AddCommand(dnsDiscoverDomainsCmd)
+
+	dnsCmd.AddCommand(dnsSyncCmd)
+	dnsSyncCmd.PersistentFlags().StringP("config", "c", "", "configuration file, filepath")
+	dnsSyncCmd.PersistentFlags().Bool("doit", false, "apply planned changes")
+	dnsSyncCmd.PersistentFlags().Bool("remove", false, "remove resources which are not present in configuration file")
 }

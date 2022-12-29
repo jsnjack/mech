@@ -9,7 +9,8 @@ import (
 
 type MainConfig struct {
 	Constellix struct {
-		Sonar SonarConfig `yaml:"sonar"`
+		Sonar SonarConfig         `yaml:"sonar"`
+		DNS   map[string][]string `yaml:"dns"`
 	} `yaml:"constellix"`
 }
 
@@ -21,6 +22,7 @@ type SonarConfig struct {
 type Config struct {
 	SonarHTTPChecks []*ExpectedSonarHTTPCheck
 	SonarTCPChecks  []*ExpectedSonarTCPCheck
+	DNS             map[string][]*ExpectedDNSRecord
 }
 
 func getConfig(configFile string) (*Config, error) {
@@ -86,6 +88,27 @@ func getConfig(configFile string) (*Config, error) {
 					return nil, err
 				}
 			}
+		}
+	}
+
+	// DNS
+	config.DNS = make(map[string][]*ExpectedDNSRecord)
+	for domainName, item := range mainConfig.Constellix.DNS {
+		for _, recordsFile := range item {
+			configToRead := filepath.Join(filepath.Dir(configFile), recordsFile)
+			if rootVerbose {
+				logger.Printf("  reading %s...\n", configToRead)
+			}
+			configToReadBytes, err := os.ReadFile(configToRead)
+			if err != nil {
+				return nil, err
+			}
+			var records []*ExpectedDNSRecord
+			err = yaml.Unmarshal(configToReadBytes, &records)
+			if err != nil {
+				return nil, err
+			}
+			config.DNS[domainName] = append(config.DNS[domainName], records...)
 		}
 	}
 	return &config, nil

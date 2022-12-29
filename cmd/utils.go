@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -127,6 +128,30 @@ func makeSimpleAPIRequest(method string, url string, payload io.Reader, expected
 		return body, fmt.Errorf("unexpected status code %d, want %d", resp.StatusCode, expectedStatusCode)
 	}
 	return body, nil
+}
+
+// makev4APIRequest makes a request to the v4 API, which supports pagination.
+// It returns a slice of response bodies, one for each page.
+func makev4APIRequest(method string, url string, payload io.Reader, expectedStatusCode int) (respBodys [][]byte, err error) {
+	next := true
+	for next {
+		data, err := makeSimpleAPIRequest(method, url, payload, expectedStatusCode)
+		if err != nil {
+			return nil, fmt.Errorf("unable to retrieve resource: %s", err)
+		}
+		resp := DNSv4Response{}
+		err = json.Unmarshal(data, &resp)
+		if err != nil {
+			return nil, err
+		}
+		respBodys = append(respBodys, resp.Data)
+		if resp.Meta.Links.Next != "" {
+			url = resp.Meta.Links.Next
+		} else {
+			next = false
+		}
+	}
+	return respBodys, nil
 }
 
 func getMatchingResource(item ResourceMatcher, collection []ResourceMatcher) interface{} {

@@ -19,7 +19,8 @@ type IExpectedResource interface {
 	GetImmutableStructFields() []string
 	// Returns the resource itself
 	GetResource() interface{}
-	// Returns struct field name with which resources will be matched
+	// Returns struct field name with which resources will be matched internally.
+	// Can be name or even a combination of fields
 	GetResourceID() string
 	// Create a new active resource via API from expected resource
 	SyncResourceCreate() error
@@ -33,6 +34,8 @@ type IActiveResource interface {
 	// Returns ID of the resource in Constellix
 	GetConstellixID() int
 	GetResource() interface{}
+	// Returns struct field name with which resources will be matched internally.
+	// Can be name or even a combination of fields
 	GetResourceID() string
 	// Delete active resource
 	SyncResourceDelete(int) error
