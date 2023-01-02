@@ -8,19 +8,19 @@ import (
 
 // SOA is ignored for now
 type DNSDomain struct {
-	ID               int      `json:"id"`
-	Name             string   `json:"name"`
-	Note             string   `json:"note"`
-	Status           string   `json:"status"`
-	GeoIPEnabled     bool     `json:"geoip"`
-	GTDEnabled       bool     `json:"gtd"`
-	Nameservers      []string `json:"nameservers"`
-	Tags             []string `json:"tags"`
-	Template         int      `json:"template"`
-	VanityNameserver []string `json:"vanityNameserver"`
-	Contacts         []int    `json:"contacts"`
-	CreatedAt        string   `json:"createdAt"`
-	UpdatedAt        string   `json:"updatedAt"`
+	ID               int         `json:"id"`
+	Name             string      `json:"name"`
+	Note             string      `json:"note"`
+	Status           string      `json:"status"`
+	GeoIPEnabled     bool        `json:"geoip"`
+	GTDEnabled       bool        `json:"gtd"`
+	Nameservers      []string    `json:"nameservers"`
+	Tags             []string    `json:"tags"`
+	Template         int         `json:"template"`
+	VanityNameserver interface{} `json:"vanityNameserver"`
+	Contacts         []int       `json:"contacts"`
+	CreatedAt        string      `json:"createdAt"`
+	UpdatedAt        string      `json:"updatedAt"`
 }
 
 // GetDNSDomains returns active DNS domains in Constellix
