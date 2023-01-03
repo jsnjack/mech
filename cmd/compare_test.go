@@ -262,3 +262,44 @@ func Test_ToResourceMatcher(t *testing.T) {
 		return
 	}
 }
+
+func Test_Compare_dns_record_standard_value(t *testing.T) {
+	expectedStr := `
+name: abc
+type: A
+ttl: 60
+mode: standard
+region: default
+enabled: true
+value:
+  - value: 1.1.1.1
+    enabled: true
+`
+	var expected ExpectedDNSRecord
+	err := yaml.Unmarshal([]byte(expectedStr), &expected)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	expectedValue := make([]*DNSStandardValue, 0)
+	expectedValue = append(expectedValue, &DNSStandardValue{Value: "8.8.8.8", Enabled: true})
+	active := DNSRecord{
+		Name:    "abc",
+		Type:    "A",
+		TTL:     60,
+		Mode:    "standard",
+		Region:  "default",
+		Enabled: true,
+		Value:   expectedValue,
+	}
+	action, _, err := Compare(&expected, &active)
+
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if action != ActionUpate {
+		t.Errorf("expected action '%v', got '%v'", ActionUpate, action)
+		return
+	}
+}

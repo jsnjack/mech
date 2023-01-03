@@ -13,6 +13,46 @@ import (
 
 var dnsRecordResourceIDTemplate = "%s:%s"
 
+type aliasDNSRecord DNSRecord
+
+// populateDNSRecordValue populates the Value field of a DNSRecord based on the
+// Mode field.
+func populateDNSRecordValue(record interface{}) error {
+	s, ok := record.(*DNSRecord)
+	if !ok {
+		return fmt.Errorf("unable to assert record to DNSRecord")
+	}
+	switch s.Mode {
+	case "standard":
+		m, ok := s.Value.([]interface{})
+		if !ok {
+			return fmt.Errorf("unable to parse value for standard mode, expected an array")
+		}
+		valueObj := make([]*DNSStandardValue, 0)
+		for _, el := range m {
+			elMap, ok := el.(map[string]interface{})
+			if !ok {
+				return fmt.Errorf("unable to parse value for standard mode, expected an map")
+			}
+			valueEl := DNSStandardValue{
+				Value:   elMap["value"].(string),
+				Enabled: elMap["enabled"].(bool),
+			}
+			valueObj = append(valueObj, &valueEl)
+		}
+		s.Value = valueObj
+	case "failover":
+		// Failover mode
+	case "roundrobin-failover":
+		// Round Robin Failover mode
+	case "pools":
+		// Pools mode
+	default:
+		return fmt.Errorf("unknown mode %q", s.Mode)
+	}
+	return nil
+}
+
 // Missing fields: lastValues, skipLookup, contacts
 type DNSRecord struct {
 	ID                   int              `json:"id"`
@@ -26,9 +66,25 @@ type DNSRecord struct {
 	GeoFailover          bool             `json:"geoFailover" yaml:"geoFailover"`
 	GeoProximity         *DNSGeoProximity `json:"geoProximity" yaml:"geoProximity"`
 	Enabled              bool             `json:"enabled" yaml:"enabled"`
-	Value                []*DNSValue      `json:"value" yaml:"value"`
+	Value                interface{}      `json:"value" yaml:"value"`
 	Notes                string           `json:"notes" yaml:"notes"`
 	domainIDInConstellix int
+}
+
+func (ac *DNSRecord) UnmarshalJSON(b []byte) error {
+	var alias aliasDNSRecord
+	err := json.Unmarshal(b, &alias)
+	if err != nil {
+		return err
+	}
+
+	s := DNSRecord(alias)
+	err = populateDNSRecordValue(&s)
+	if err != nil {
+		return err
+	}
+	*ac = s
+	return nil
 }
 
 func (ac *DNSRecord) GetResource() interface{} {
@@ -80,7 +136,7 @@ type DNSGeoProximity struct {
 	Name string `json:"name"`
 }
 
-type DNSValue struct {
+type DNSStandardValue struct {
 	Value   string `json:"value"`
 	Enabled bool   `json:"enabled"`
 }
@@ -103,6 +159,11 @@ func (ex *ExpectedDNSRecord) UnmarshalYAML(value *yaml.Node) error {
 	// Unmarshall data into DNSRecord struct
 	var s DNSRecord
 	err := value.Decode(&s)
+	if err != nil {
+		return err
+	}
+
+	err = populateDNSRecordValue(&s)
 	if err != nil {
 		return err
 	}
