@@ -221,7 +221,6 @@ func GetDNSRecords(id int) ([]*DNSRecord, error) {
 
 	var records []*DNSRecord
 	for _, item := range data {
-		fmt.Println(string(item))
 		var tmpRecords []*DNSRecord
 		err = json.Unmarshal(item, &tmpRecords)
 		if err != nil {

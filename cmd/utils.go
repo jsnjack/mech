@@ -139,14 +139,18 @@ func makev4APIRequest(method string, url string, payload io.Reader, expectedStat
 		if err != nil {
 			return nil, fmt.Errorf("unable to retrieve resource: %s", err)
 		}
-		resp := DNSv4Response{}
-		err = json.Unmarshal(data, &resp)
-		if err != nil {
-			return nil, err
-		}
-		respBodys = append(respBodys, resp.Data)
-		if resp.Meta.Links.Next != "" {
-			url = resp.Meta.Links.Next
+		if len(data) != 0 {
+			resp := DNSv4Response{}
+			err = json.Unmarshal(data, &resp)
+			if err != nil {
+				return nil, err
+			}
+			respBodys = append(respBodys, resp.Data)
+			if resp.Meta.Links.Next != "" {
+				url = resp.Meta.Links.Next
+			} else {
+				next = false
+			}
 		} else {
 			next = false
 		}
