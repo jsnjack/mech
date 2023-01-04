@@ -13,46 +13,6 @@ import (
 
 var dnsRecordResourceIDTemplate = "%s:%s"
 
-type aliasDNSRecord DNSRecord
-
-// populateDNSRecordValue populates the Value field of a DNSRecord based on the
-// Mode field.
-func populateDNSRecordValue(record interface{}) error {
-	s, ok := record.(*DNSRecord)
-	if !ok {
-		return fmt.Errorf("unable to assert record to DNSRecord")
-	}
-	switch s.Mode {
-	case "standard":
-		m, ok := s.Value.([]interface{})
-		if !ok {
-			return fmt.Errorf("unable to parse value for standard mode, expected an array")
-		}
-		valueObj := make([]*DNSStandardValue, 0)
-		for _, el := range m {
-			elMap, ok := el.(map[string]interface{})
-			if !ok {
-				return fmt.Errorf("unable to parse value for standard mode, expected an map")
-			}
-			valueEl := DNSStandardValue{
-				Value:   elMap["value"].(string),
-				Enabled: elMap["enabled"].(bool),
-			}
-			valueObj = append(valueObj, &valueEl)
-		}
-		s.Value = valueObj
-	case "failover":
-		// Failover mode
-	case "roundrobin-failover":
-		// Round Robin Failover mode
-	case "pools":
-		// Pools mode
-	default:
-		return fmt.Errorf("unknown mode %q", s.Mode)
-	}
-	return nil
-}
-
 // Missing fields: lastValues, skipLookup, contacts
 type DNSRecord struct {
 	ID                   int              `json:"id"`
@@ -77,7 +37,6 @@ func (ac *DNSRecord) UnmarshalJSON(b []byte) error {
 	if err != nil {
 		return err
 	}
-
 	s := DNSRecord(alias)
 	err = populateDNSRecordValue(&s)
 	if err != nil {
@@ -134,11 +93,6 @@ type DNSIPFilter struct {
 type DNSGeoProximity struct {
 	ID   int    `json:"id"`
 	Name string `json:"name"`
-}
-
-type DNSStandardValue struct {
-	Value   string `json:"value"`
-	Enabled bool   `json:"enabled"`
 }
 
 type ExpectedDNSRecord struct {
