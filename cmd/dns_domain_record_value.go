@@ -4,7 +4,7 @@ import (
 	"fmt"
 )
 
-type DNSStandardValue struct {
+type DNSStandardItemValue struct {
 	Value   string `json:"value"`
 	Enabled bool   `json:"enabled"`
 }
@@ -38,13 +38,13 @@ func populateDNSRecordValue(record interface{}) error {
 		if !ok {
 			return fmt.Errorf("unable to parse value for standard mode, expected an array")
 		}
-		valueObj := make([]*DNSStandardValue, 0)
+		valueObj := make([]*DNSStandardItemValue, 0)
 		for _, el := range m {
 			elMap, ok := el.(map[string]interface{})
 			if !ok {
 				return fmt.Errorf("unable to parse value for standard mode, expected an map")
 			}
-			valueEl := DNSStandardValue{
+			valueEl := DNSStandardItemValue{
 				Value:   elMap["value"].(string),
 				Enabled: elMap["enabled"].(bool),
 			}

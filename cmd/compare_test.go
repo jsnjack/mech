@@ -281,8 +281,8 @@ value:
 		t.Error(err)
 		return
 	}
-	expectedValue := make([]*DNSStandardValue, 0)
-	expectedValue = append(expectedValue, &DNSStandardValue{Value: "8.8.8.8", Enabled: true})
+	expectedValue := make([]*DNSStandardItemValue, 0)
+	expectedValue = append(expectedValue, &DNSStandardItemValue{Value: "8.8.8.8", Enabled: true})
 	active := DNSRecord{
 		Name:    "abc",
 		Type:    "A",

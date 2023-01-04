@@ -33,11 +33,11 @@ value:
 		t.Errorf("expected %q, got %q", "standard", obj.Mode)
 		return
 	}
-	expected := DNSStandardValue{
+	expected := DNSStandardItemValue{
 		Value:   "1.1.1.1",
 		Enabled: true,
 	}
-	res, ok := obj.Value.([]*DNSStandardValue)
+	res, ok := obj.Value.([]*DNSStandardItemValue)
 	if !ok {
 		t.Errorf("unexpected type %T", obj.Value)
 		return
@@ -73,11 +73,11 @@ func TestExpectedDNSRecord_Standard_UnmarshalJSON(t *testing.T) {
 		t.Errorf("expected %q, got %q", "standard", obj.Mode)
 		return
 	}
-	expected := DNSStandardValue{
+	expected := DNSStandardItemValue{
 		Value:   "1.1.1.1",
 		Enabled: true,
 	}
-	res, ok := obj.Value.([]*DNSStandardValue)
+	res, ok := obj.Value.([]*DNSStandardItemValue)
 	if !ok {
 		t.Errorf("unexpected type %T", obj.Value)
 		return
