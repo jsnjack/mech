@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"testing"
 
+	"golang.org/x/exp/slices"
 	yaml "gopkg.in/yaml.v3"
 )
 
@@ -410,6 +411,82 @@ func TestExpectedDNSRecord_RRFailover_UnmarshalJSON(t *testing.T) {
 	res2 := res[1]
 	if res2.SonarCheckID != expected[1].SonarCheckID {
 		t.Errorf("expected %d, got %d", expected[1].SonarCheckID, res2.SonarCheckID)
+		return
+	}
+}
+
+func TestExpectedDNSRecord_Pools_UnmarshalYAML(t *testing.T) {
+	data := `
+name: abc
+type: A
+ttl: 60
+mode: pools
+region: default
+enabled: true
+value:
+  - 1
+  - 3
+`
+	var obj ExpectedDNSRecord
+	err := yaml.Unmarshal([]byte(data), &obj)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if obj.Name != "abc" {
+		t.Errorf("expected %q, got %q", "abc", obj.Name)
+		return
+	}
+	if obj.Mode != "pools" {
+		t.Errorf("expected %q, got %q", "pools", obj.Mode)
+		return
+	}
+	expected := []int{1, 3}
+
+	res, ok := obj.Value.([]int)
+	if !ok {
+		t.Errorf("unexpected type %T", obj.Value)
+		return
+	}
+	if len(res) != 2 {
+		t.Errorf("expected 2, got %d", len(res))
+		return
+	}
+	if slices.Compare(res, expected) != 0 {
+		t.Errorf("expected %v, got %v", expected, res)
+		return
+	}
+}
+
+func TestExpectedDNSRecord_Pools_UnmarshalJSON(t *testing.T) {
+	data := `{"id":31847262,"name":"abc","type":"A","ttl":60,"mode":"pools","region":"default","ipfilter":null,"ipfilterDrop":false,"geoFailover":false,"geoproximity":null,"enabled":true,"value":[1,3]}`
+	var obj ExpectedDNSRecord
+	err := json.Unmarshal([]byte(data), &obj)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if obj.Name != "abc" {
+		t.Errorf("expected %q, got %q", "abc", obj.Name)
+		return
+	}
+	if obj.Mode != "pools" {
+		t.Errorf("expected %q, got %q", "failover", obj.Mode)
+		return
+	}
+	expected := []int{1, 3}
+
+	res, ok := obj.Value.([]int)
+	if !ok {
+		t.Errorf("unexpected type %T", obj.Value)
+		return
+	}
+	if len(res) != 2 {
+		t.Errorf("expected 2, got %d", len(res))
+		return
+	}
+	if slices.Compare(res, expected) != 0 {
+		t.Errorf("expected %v, got %v", expected, res)
 		return
 	}
 }

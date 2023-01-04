@@ -96,7 +96,15 @@ func populateDNSRecordValue(record interface{}) error {
 		}
 		s.Value = valueObj
 	case "pools":
-		// Pools mode
+		m, ok := s.Value.([]interface{})
+		if !ok {
+			return fmt.Errorf("unable to parse value for pools mode, expected an array")
+		}
+		valueObj := make([]int, 0)
+		for _, el := range m {
+			valueObj = append(valueObj, toInt(el))
+		}
+		s.Value = valueObj
 	default:
 		return fmt.Errorf("unknown mode %q", s.Mode)
 	}
