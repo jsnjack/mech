@@ -76,7 +76,25 @@ func populateDNSRecordValue(record interface{}) error {
 		valueObj.Values = values
 		s.Value = &valueObj
 	case "roundrobin-failover":
-		// Round Robin Failover mode
+		m, ok := s.Value.([]interface{})
+		if !ok {
+			return fmt.Errorf("unable to parse value for roundrobin-failover mode, expected an array")
+		}
+		valueObj := make([]*DNSFailoverItemValue, 0)
+		for _, el := range m {
+			elMap, ok := el.(map[string]interface{})
+			if !ok {
+				return fmt.Errorf("unable to parse value for roundrobin-failover mode, expected an map")
+			}
+			valueEl := DNSFailoverItemValue{
+				Value:        elMap["value"].(string),
+				Enabled:      elMap["enabled"].(bool),
+				Order:        toInt(elMap["order"]),
+				SonarCheckID: toInt(elMap["sonarCheckId"]),
+			}
+			valueObj = append(valueObj, &valueEl)
+		}
+		s.Value = valueObj
 	case "pools":
 		// Pools mode
 	default:

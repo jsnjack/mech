@@ -271,3 +271,145 @@ func TestExpectedDNSRecord_Failover_UnmarshalJSON(t *testing.T) {
 		return
 	}
 }
+
+func TestExpectedDNSRecord_RRFailover_UnmarshalYAML(t *testing.T) {
+	data := `
+name: abc
+type: A
+ttl: 60
+mode: roundrobin-failover
+region: default
+enabled: true
+value:
+  - value: 1.1.1.1
+    enabled: true
+    order: 1
+    sonarCheckId: 123
+  - value: 1.1.1.2
+    enabled: true
+    order: 2
+    sonarCheckId: null
+`
+	var obj ExpectedDNSRecord
+	err := yaml.Unmarshal([]byte(data), &obj)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if obj.Name != "abc" {
+		t.Errorf("expected %q, got %q", "abc", obj.Name)
+		return
+	}
+	if obj.Mode != "roundrobin-failover" {
+		t.Errorf("expected %q, got %q", "roundrobin-failover", obj.Mode)
+		return
+	}
+	expected := []*DNSFailoverItemValue{
+		{
+			Value:        "1.1.1.1",
+			Enabled:      true,
+			Order:        1,
+			SonarCheckID: 123,
+		},
+		{
+			Value:        "1.1.1.2",
+			Enabled:      true,
+			Order:        2,
+			SonarCheckID: 0,
+		},
+	}
+	res, ok := obj.Value.([]*DNSFailoverItemValue)
+	if !ok {
+		t.Errorf("unexpected type %T", obj.Value)
+		return
+	}
+	if len(res) != 2 {
+		t.Errorf("expected 2, got %d", len(res))
+		return
+	}
+	res1 := res[0]
+	if res1.Value != expected[0].Value {
+		t.Errorf("expected %q, got %q", expected[0].Value, res1.Value)
+		return
+	}
+	if res1.Enabled != expected[0].Enabled {
+		t.Errorf("expected %t, got %t", expected[0].Enabled, res1.Enabled)
+		return
+	}
+	if res1.Order != expected[0].Order {
+		t.Errorf("expected %d, got %d", expected[0].Order, res1.Order)
+		return
+	}
+	if res1.SonarCheckID != expected[0].SonarCheckID {
+		t.Errorf("expected %d, got %d", expected[0].SonarCheckID, res1.SonarCheckID)
+		return
+	}
+	res2 := res[1]
+	if res2.SonarCheckID != expected[1].SonarCheckID {
+		t.Errorf("expected %d, got %d", expected[1].SonarCheckID, res2.SonarCheckID)
+		return
+	}
+}
+
+func TestExpectedDNSRecord_RRFailover_UnmarshalJSON(t *testing.T) {
+	data := `{"id":31847262,"name":"abc","type":"A","ttl":60,"mode":"roundrobin-failover","region":"default","ipfilter":null,"ipfilterDrop":false,"geoFailover":false,"geoproximity":null,"enabled":true,"value":[{"value":"159.69.18.28","order":1,"sonarCheckId":84874,"enabled":true,"active":false,"failed":true,"status":"DOWN"},{"value":"1.1.1.1","order":2,"sonarCheckId":null,"enabled":true,"active":false,"failed":false,"status":"N\/A"}]}`
+	var obj ExpectedDNSRecord
+	err := json.Unmarshal([]byte(data), &obj)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if obj.Name != "abc" {
+		t.Errorf("expected %q, got %q", "abc", obj.Name)
+		return
+	}
+	if obj.Mode != "roundrobin-failover" {
+		t.Errorf("expected %q, got %q", "failover", obj.Mode)
+		return
+	}
+	expected := []*DNSFailoverItemValue{
+		{
+			Value:        "159.69.18.28",
+			Enabled:      true,
+			Order:        1,
+			SonarCheckID: 84874,
+		},
+		{
+			Value:        "1.1.1.2",
+			Enabled:      true,
+			Order:        2,
+			SonarCheckID: 0,
+		},
+	}
+	res, ok := obj.Value.([]*DNSFailoverItemValue)
+	if !ok {
+		t.Errorf("unexpected type %T", obj.Value)
+		return
+	}
+	if len(res) != 2 {
+		t.Errorf("expected 2, got %d", len(res))
+		return
+	}
+	res1 := res[0]
+	if res1.Value != expected[0].Value {
+		t.Errorf("expected %q, got %q", expected[0].Value, res1.Value)
+		return
+	}
+	if res1.Enabled != expected[0].Enabled {
+		t.Errorf("expected %t, got %t", expected[0].Enabled, res1.Enabled)
+		return
+	}
+	if res1.Order != expected[0].Order {
+		t.Errorf("expected %d, got %d", expected[0].Order, res1.Order)
+		return
+	}
+	if res1.SonarCheckID != expected[0].SonarCheckID {
+		t.Errorf("expected %d, got %d", expected[0].SonarCheckID, res1.SonarCheckID)
+		return
+	}
+	res2 := res[1]
+	if res2.SonarCheckID != expected[1].SonarCheckID {
+		t.Errorf("expected %d, got %d", expected[1].SonarCheckID, res2.SonarCheckID)
+		return
+	}
+}
