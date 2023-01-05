@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"strings"
 )
 
 type DNSStandardItemValue struct {
@@ -65,11 +66,15 @@ func populateDNSRecordValue(record interface{}) error {
 			if !ok {
 				return fmt.Errorf("unable to parse value for value of failover mode, expected an map")
 			}
+			sonarCheckID, err := getSonarCheckID(valueItemMap["sonarCheckId"])
+			if err != nil {
+				return err
+			}
 			valueItemObj := DNSFailoverItemValue{
 				Enabled:      valueItemMap["enabled"].(bool),
 				Order:        toInt(valueItemMap["order"]),
 				Value:        valueItemMap["value"].(string),
-				SonarCheckID: toInt(valueItemMap["sonarCheckId"]),
+				SonarCheckID: sonarCheckID,
 			}
 			values = append(values, &valueItemObj)
 		}
@@ -86,11 +91,15 @@ func populateDNSRecordValue(record interface{}) error {
 			if !ok {
 				return fmt.Errorf("unable to parse value for roundrobin-failover mode, expected an map")
 			}
+			sonarCheckID, err := getSonarCheckID(elMap["sonarCheckId"])
+			if err != nil {
+				return err
+			}
 			valueEl := DNSFailoverItemValue{
 				Value:        elMap["value"].(string),
 				Enabled:      elMap["enabled"].(bool),
 				Order:        toInt(elMap["order"]),
-				SonarCheckID: toInt(elMap["sonarCheckId"]),
+				SonarCheckID: sonarCheckID,
 			}
 			valueObj = append(valueObj, &valueEl)
 		}
@@ -120,4 +129,52 @@ func toInt(i interface{}) int {
 	default:
 		return 0
 	}
+}
+
+func getSonarCheckID(i interface{}) (int, error) {
+	switch v := i.(type) {
+	case string:
+		checkType, checkName, err := parseSonarCheckID(v)
+		if err != nil {
+			return 0, err
+		}
+		switch checkType {
+		case "http":
+			checks, err := GetSonarHTTPChecks()
+			if err != nil {
+				return 0, err
+			}
+			for _, check := range checks {
+				if check.Name == checkName {
+					return check.ID, nil
+				}
+			}
+		case "tcp":
+			checks, err := GetSonarTCPChecks()
+			if err != nil {
+				return 0, err
+			}
+			for _, check := range checks {
+				if check.Name == checkName {
+					return check.ID, nil
+				}
+			}
+		}
+	}
+	return toInt(i), nil
+}
+
+// parseSonarCheckID parses a sonar check ID from a string. It assumes that the string
+// will start with a @, followed by code word 'sonar' with specified check type and the
+// name of the check itself
+func parseSonarCheckID(s string) (string, string, error) {
+	if !strings.HasPrefix(s, "@sonar,") {
+		return "", "", fmt.Errorf("invalid sonar check ID. Expected @sonar,<check_type>:<check_name> or int")
+	}
+	s = strings.TrimPrefix(s, "@sonar,")
+	split := strings.Split(s, ":")
+	if len(split) != 2 {
+		return "", "", fmt.Errorf("invalid sonar check ID. Expected @sonar,<check_type>:<check_name> or int")
+	}
+	return split[0], split[1], nil
 }
