@@ -5,6 +5,7 @@ import (
 	"reflect"
 	"strconv"
 
+	"github.com/sergi/go-diff/diffmatchpatch"
 	"golang.org/x/exp/slices"
 )
 
@@ -55,12 +56,11 @@ type FieldDiff struct {
 
 // Return human readable string representation of the FieldDiff
 func (f *FieldDiff) String() string {
-	return fmt.Sprintf(
-		"%s: %s%s",
-		f.FieldName,
-		Red+Crossed+f.OldValue+Reset,
-		Green+f.NewValue+Reset,
-	)
+	dmp := diffmatchpatch.New()
+	dmp.DiffEditCost = 0
+	diffs := dmp.DiffMain(f.OldValue, f.NewValue, false)
+	text := DiffPrettyText(diffs)
+	return f.FieldName + ": " + text
 }
 
 // getFieldDiff returns FieldDiff for the given field name
@@ -149,13 +149,11 @@ func valueToString(val reflect.Value) string {
 		}
 	case reflect.Pointer:
 		v := val
-		str = typ.String() + "("
 		if v.IsNil() {
 			str += "0"
 		} else {
-			str += "&" + valueToString(v.Elem())
+			str += valueToString(v.Elem())
 		}
-		str += ")"
 		return str
 	case reflect.Array, reflect.Slice:
 		v := val
@@ -179,20 +177,19 @@ func valueToString(val reflect.Value) string {
 		str = typ.String()
 		return str
 	case reflect.Struct:
-		t := typ
 		v := val
-		str += t.String()
 		str += "{"
 		for i, n := 0, v.NumField(); i < n; i++ {
 			if i > 0 {
 				str += ", "
 			}
+			str += getTag(v.Type(), v.Type().Field(i).Name, "json") + ": "
 			str += valueToString(v.Field(i))
 		}
 		str += "}"
 		return str
 	case reflect.Interface:
-		return typ.String() + "(" + valueToString(val.Elem()) + ")"
+		return valueToString(val.Elem())
 	case reflect.Func:
 		v := val
 		return typ.String() + "(" + strconv.FormatUint(uint64(v.Pointer()), 10) + ")"

@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"testing"
 
 	yaml "gopkg.in/yaml.v3"
@@ -300,6 +301,56 @@ value:
 	}
 	if action != ActionUpate {
 		t.Errorf("expected action '%v', got '%v'", ActionUpate, action)
+		return
+	}
+}
+
+func Test_Compare_dns_record_standard(t *testing.T) {
+	expectedStr := `
+name: abc
+type: A
+ttl: 60
+mode: standard
+region: default
+enabled: true
+value:
+  - value: 1.1.1.1
+    enabled: true
+`
+	var expected ExpectedDNSRecord
+	err := yaml.Unmarshal([]byte(expectedStr), &expected)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	acValue := DNSStandardItemValue{Value: "1.1.1.2", Enabled: true}
+	active := DNSRecord{Name: "abc", Type: "A", TTL: 60, Mode: "standard", Region: "default", Enabled: true, Value: []*DNSStandardItemValue{&acValue}}
+	action, diffList, err := Compare(&expected, &active)
+
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	if action != ActionUpate {
+		t.Errorf("expected action '%v', got '%v'", ActionUpate, action)
+		return
+	}
+	if len(diffList) != 1 {
+		t.Errorf("expected 1 diff, got %v", len(diffList))
+		return
+	}
+	diff := diffList[0]
+	if diff.FieldName != "Value" {
+		t.Errorf("expected field 'Value', got '%v'", diff.FieldName)
+		return
+	}
+	if diff.OldValue != "[{value: 1.1.1.2, enabled: true}]" {
+		t.Errorf("expected old value '[{value: 1.1.1.2, enabled: true}]', got '%v'", diff.OldValue)
+		return
+	}
+	fmt.Println(diff.String())
+	if diff.NewValue != "[{value: 1.1.1.1, enabled: true}]" {
+		t.Errorf("expected new value '[{value: 1.1.1.1, enabled: true}]', got '%v'", diff.NewValue)
 		return
 	}
 }

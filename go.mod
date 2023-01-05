@@ -4,6 +4,7 @@ go 1.19
 
 require (
 	github.com/jedib0t/go-pretty/v6 v6.4.2
+	github.com/sergi/go-diff v1.2.0
 	github.com/spf13/cobra v1.6.1
 	golang.org/x/exp v0.0.0-20221111204811-129d8d6c17ab
 	gopkg.in/yaml.v3 v3.0.1

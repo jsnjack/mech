@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -9,9 +10,12 @@ import (
 	"regexp"
 	"strings"
 	"time"
+
+	"github.com/sergi/go-diff/diffmatchpatch"
 )
 
 const rateLimitWaitTime = 5
+const textSpacer = 15
 
 const Reset = "\033[0m"
 const Red = "\033[31m"
@@ -81,6 +85,24 @@ OUTER:
 		}
 	}
 	return res
+}
+
+// getTag returns the tag value for a given field name
+func getTag(obj interface{}, fieldName string, tagType string) string {
+	t, ok := obj.(reflect.Type)
+	if !ok {
+		return ""
+	}
+	fields := reflect.VisibleFields(t)
+	for _, f := range fields {
+		val, ok := f.Tag.Lookup(tagType)
+		if ok {
+			if f.Name == fieldName {
+				return strings.Split(val, ",")[0]
+			}
+		}
+	}
+	return ""
 }
 
 // makeSimpleAPIRequest makes a simple API request, normally to the Sonar API as
@@ -165,4 +187,43 @@ func getMatchingResource(item ResourceMatcher, collection []ResourceMatcher) int
 		}
 	}
 	return nil
+}
+
+func DiffPrettyText(diffs []diffmatchpatch.Diff) string {
+	var buff bytes.Buffer
+	for idx, diff := range diffs {
+		text := diff.Text
+
+		switch diff.Type {
+		case diffmatchpatch.DiffInsert:
+			_, _ = buff.WriteString(Green)
+			_, _ = buff.WriteString(text)
+			_, _ = buff.WriteString(Reset)
+		case diffmatchpatch.DiffDelete:
+			_, _ = buff.WriteString(Red + Crossed)
+			_, _ = buff.WriteString(text)
+			_, _ = buff.WriteString(Reset)
+		case diffmatchpatch.DiffEqual:
+			if idx == 0 {
+				// the beginning is the same, we can skip it
+				textRune := []rune(text)
+				if len(textRune) > textSpacer {
+					text = "..." + string(textRune[len(textRune)-textSpacer:])
+				}
+				_, _ = buff.WriteString(text)
+			} else if idx == len(diffs)-1 {
+				// the end is the same, we can skip it
+				textRune := []rune(text)
+				if len(textRune) > textSpacer {
+					text = string(textRune[0:textSpacer]) + "..."
+				}
+				_, _ = buff.WriteString(text)
+			} else {
+				_, _ = buff.WriteString(text)
+			}
+		}
+
+	}
+
+	return buff.String()
 }
