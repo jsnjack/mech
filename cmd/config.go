@@ -9,8 +9,9 @@ import (
 
 type MainConfig struct {
 	Constellix struct {
-		Sonar SonarConfig         `yaml:"sonar"`
-		DNS   map[string][]string `yaml:"dns"`
+		Sonar                   SonarConfig         `yaml:"sonar"`
+		GeoProximityConfigFiles []string            `yaml:"geoproximity"`
+		DNS                     map[string][]string `yaml:"dns"`
 	} `yaml:"constellix"`
 }
 
@@ -23,6 +24,7 @@ type Config struct {
 	SonarHTTPChecks []*ExpectedSonarHTTPCheck
 	SonarTCPChecks  []*ExpectedSonarTCPCheck
 	DNS             map[string][]*ExpectedDNSRecord
+	GeoProximities  []*ExpectedGeoProximity
 }
 
 func getConfig(configFile string) (*Config, error) {
@@ -109,6 +111,32 @@ func getConfig(configFile string) (*Config, error) {
 				return nil, err
 			}
 			config.DNS[domainName] = append(config.DNS[domainName], records...)
+		}
+	}
+
+	// GeoProximities
+	for _, item := range mainConfig.Constellix.GeoProximityConfigFiles {
+		configToRead := filepath.Join(filepath.Dir(configFile), item)
+		if rootVerbose {
+			logger.Printf("  reading %s...\n", configToRead)
+		}
+		configToReadBytes, err := os.ReadFile(configToRead)
+		if err != nil {
+			return nil, err
+		}
+		var geops []*ExpectedGeoProximity
+		err = yaml.Unmarshal(configToReadBytes, &geops)
+		if err != nil {
+			return nil, err
+		}
+		if len(geops) > 0 {
+			config.GeoProximities = append(config.GeoProximities, geops...)
+			for _, check := range geops {
+				err = check.Validate()
+				if err != nil {
+					return nil, err
+				}
+			}
 		}
 	}
 	return &config, nil
