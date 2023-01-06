@@ -149,6 +149,10 @@ func makeSimpleAPIRequest(method string, url string, payload io.Reader, expected
 	if resp.StatusCode != expectedStatusCode {
 		return body, fmt.Errorf("unexpected status code %d, want %d", resp.StatusCode, expectedStatusCode)
 	}
+	if rootDebug {
+		logger.Println(method, url, resp.StatusCode)
+		logger.Println(string(body))
+	}
 	return body, nil
 }
 

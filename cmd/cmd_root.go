@@ -12,6 +12,7 @@ import (
 )
 
 var rootVerbose bool
+var rootDebug bool
 var constellixAPIKey string
 var constellixSecretKey string
 
@@ -41,6 +42,7 @@ func init() {
 	logger = log.New(os.Stdout, "", 0)
 	testBuffer = new(bytes.Buffer)
 	rootCmd.PersistentFlags().BoolVarP(&rootVerbose, "verbose", "v", false, "enable verbose logging")
+	rootCmd.PersistentFlags().BoolVarP(&rootDebug, "debug", "d", false, "enable debug logging")
 	constellixAPIKey = os.Getenv("CONSTELLIX_API_KEY")
 	constellixSecretKey = os.Getenv("CONSTELLIX_SECRET_KEY")
 	if constellixAPIKey == "" || constellixSecretKey == "" {
