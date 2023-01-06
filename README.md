@@ -22,8 +22,26 @@ mech
   - [ ] ssl cert
 
 ## DNS
- - [x] Domain records
- - [ ] GeoProximity
+ - [ ] Domain records
+   - [x] A
+   - [ ] AAAA
+   - [ ] ANAME
+   - [ ] CAA
+   - [ ] CERT
+   - [ ] CNAME
+   - [ ] HINFO
+   - [ ] HTTP
+   - [ ] MX
+   - [ ] NAPTR
+   - [ ] NS
+   - [ ] PTR
+   - [ ] RP
+   - [ ] SPF
+   - [ ] SRV
+   - [ ] TXT
+
+ - [x] GeoProximity
+   - [ ] Renaming
 
 # Configuration format
 ```
