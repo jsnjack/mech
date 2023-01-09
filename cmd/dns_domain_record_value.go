@@ -6,27 +6,27 @@ import (
 )
 
 type DNSStandardItemValue struct {
-	Value   string `json:"value"`
-	Enabled bool   `json:"enabled"`
+	Value   string `json:"value" yaml:"value"`
+	Enabled bool   `json:"enabled" yaml:"enabled"`
 }
 
 type DNSFailoverValue struct {
-	Mode    string                  `json:"mode"`
-	Enabled bool                    `json:"enabled"`
-	Values  []*DNSFailoverItemValue `json:"values"`
+	Mode    string                  `json:"mode" yaml:"mode"`
+	Enabled bool                    `json:"enabled" yaml:"enabled"`
+	Values  []*DNSFailoverItemValue `json:"values" yaml:"values"`
 }
 
 type DNSFailoverItemValue struct {
-	Enabled      bool   `json:"enabled"`
-	Order        int    `json:"order"`
-	SonarCheckID int    `json:"sonarCheckId"`
-	Value        string `json:"value"`
+	Enabled      bool   `json:"enabled" yaml:"enabled"`
+	Order        int    `json:"order" yaml:"order"`
+	SonarCheckID int    `json:"sonarCheckId" yaml:"sonarCheckId"`
+	Value        string `json:"value" yaml:"value"`
 }
 
 type DNSMXStandardItemValue struct {
-	Server   string `json:"server"`
-	Priority int    `json:"priority"`
-	Enabled  bool   `json:"enabled"`
+	Server   string `json:"server" yaml:"server"`
+	Priority int    `json:"priority" yaml:"priority"`
+	Enabled  bool   `json:"enabled" yaml:"enabled"`
 }
 
 type aliasDNSRecord DNSRecord
