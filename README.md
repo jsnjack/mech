@@ -31,14 +31,14 @@ mech
    - [ ] CNAME
    - [ ] HINFO
    - [ ] HTTP
-   - [ ] MX
+   - [x] MX
    - [ ] NAPTR
    - [ ] NS
    - [ ] PTR
    - [ ] RP
    - [ ] SPF
    - [ ] SRV
-   - [ ] TXT
+   - [x] TXT
 
  - [x] GeoProximity
    - [ ] Renaming
