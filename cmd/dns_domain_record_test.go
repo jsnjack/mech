@@ -458,35 +458,62 @@ value:
 	}
 }
 
-func TestExpectedDNSRecord_Pools_UnmarshalJSON(t *testing.T) {
-	data := `{"id":31847262,"name":"abc","type":"A","ttl":60,"mode":"pools","region":"default","ipfilter":null,"ipfilterDrop":false,"geoFailover":false,"geoproximity":null,"enabled":true,"value":[1,3]}`
-	var obj ExpectedDNSRecord
-	err := json.Unmarshal([]byte(data), &obj)
+func TestMXRecord(t *testing.T) {
+	data := `{"id":12494732,"name":"abc","type":"MX","ttl":86400,"mode":"standard","region":"default","ipfilter":null,"ipfilterDrop":false,"geoFailover":false,"geoproximity":null,"enabled":true,"value":[{"server":"aspmx.l.google.com.","priority":10,"enabled":true}]}`
+	var objJ ExpectedDNSRecord
+	err := json.Unmarshal([]byte(data), &objJ)
 	if err != nil {
 		t.Error(err)
 		return
 	}
-	if obj.Name != "abc" {
-		t.Errorf("expected %q, got %q", "abc", obj.Name)
+	var objY ExpectedDNSRecord
+	err = yaml.Unmarshal([]byte(data), &objY)
+	if err != nil {
+		t.Error(err)
 		return
 	}
-	if obj.Mode != "pools" {
-		t.Errorf("expected %q, got %q", "failover", obj.Mode)
-		return
-	}
-	expected := []int{1, 3}
 
-	res, ok := obj.Value.([]int)
-	if !ok {
-		t.Errorf("unexpected type %T", obj.Value)
-		return
+	expectedValue := []*DNSMXStandardItemValue{
+		{
+			Server:   "aspmx.l.google.com.",
+			Priority: 10,
+			Enabled:  true,
+		},
 	}
-	if len(res) != 2 {
-		t.Errorf("expected 2, got %d", len(res))
-		return
+
+	Compare := func(obj ExpectedDNSRecord, expectedValue []*DNSMXStandardItemValue, t *testing.T) {
+		if objJ.Name != "abc" {
+			t.Errorf("expected %q, got %q", "abc", objJ.Name)
+			return
+		}
+		if objJ.Type != "MX" {
+			t.Errorf("expected %q, got %q", "MX", objJ.Type)
+			return
+		}
+
+		res, ok := objJ.Value.([]*DNSMXStandardItemValue)
+		if !ok {
+			t.Errorf("unexpected type %T", objJ.Value)
+			return
+		}
+		if len(res) != 1 {
+			t.Errorf("expected 1, got %d", len(res))
+			return
+		}
+		if res[0].Server != expectedValue[0].Server {
+			t.Errorf("expected %q, got %q", expectedValue[0].Server, res[0].Server)
+			return
+		}
+		if res[0].Priority != expectedValue[0].Priority {
+			t.Errorf("expected %d, got %d", expectedValue[0].Priority, res[0].Priority)
+			return
+		}
+		if res[0].Enabled != expectedValue[0].Enabled {
+			t.Errorf("expected %t, got %t", expectedValue[0].Enabled, res[0].Enabled)
+			return
+		}
 	}
-	if slices.Compare(res, expected) != 0 {
-		t.Errorf("expected %v, got %v", expected, res)
-		return
-	}
+
+	Compare(objJ, expectedValue, t)
+	Compare(objY, expectedValue, t)
 }

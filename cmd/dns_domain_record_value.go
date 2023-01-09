@@ -23,6 +23,12 @@ type DNSFailoverItemValue struct {
 	Value        string `json:"value"`
 }
 
+type DNSMXStandardItemValue struct {
+	Server   string `json:"server"`
+	Priority int    `json:"priority"`
+	Enabled  bool   `json:"enabled"`
+}
+
 type aliasDNSRecord DNSRecord
 
 // populateDNSRecordValue populates the Value field of a DNSRecord based on the
@@ -33,89 +39,117 @@ func populateDNSRecordValue(record interface{}) error {
 	if !ok {
 		return fmt.Errorf("unable to assert record to DNSRecord")
 	}
-	switch s.Mode {
-	case "standard":
+	switch s.Type {
+	case "A":
+		switch s.Mode {
+		case "standard":
+			m, ok := s.Value.([]interface{})
+			if !ok {
+				return fmt.Errorf("unable to parse value for standard mode, expected an array")
+			}
+			valueObj := make([]*DNSStandardItemValue, 0)
+			for _, el := range m {
+				elMap, ok := el.(map[string]interface{})
+				if !ok {
+					return fmt.Errorf("unable to parse value for standard mode, expected an map")
+				}
+				valueEl := DNSStandardItemValue{
+					Value:   elMap["value"].(string),
+					Enabled: elMap["enabled"].(bool),
+				}
+				valueObj = append(valueObj, &valueEl)
+			}
+			s.Value = valueObj
+		case "failover":
+			valueObj := DNSFailoverValue{}
+			m, ok := s.Value.(map[string]interface{})
+			if !ok {
+				return fmt.Errorf("unable to parse value for failover mode, expected an map")
+			}
+			valueObj.Mode = m["mode"].(string)
+			valueObj.Enabled = m["enabled"].(bool)
+			values := make([]*DNSFailoverItemValue, 0)
+			for _, valueItem := range m["values"].([]interface{}) {
+				valueItemMap, ok := valueItem.(map[string]interface{})
+				if !ok {
+					return fmt.Errorf("unable to parse value for value of failover mode, expected an map")
+				}
+				sonarCheckID, err := getSonarCheckID(valueItemMap["sonarCheckId"])
+				if err != nil {
+					return err
+				}
+				valueItemObj := DNSFailoverItemValue{
+					Enabled:      valueItemMap["enabled"].(bool),
+					Order:        toInt(valueItemMap["order"]),
+					Value:        valueItemMap["value"].(string),
+					SonarCheckID: sonarCheckID,
+				}
+				values = append(values, &valueItemObj)
+			}
+			valueObj.Values = values
+			s.Value = &valueObj
+		case "roundrobin-failover":
+			m, ok := s.Value.([]interface{})
+			if !ok {
+				return fmt.Errorf("unable to parse value for roundrobin-failover mode, expected an array")
+			}
+			valueObj := make([]*DNSFailoverItemValue, 0)
+			for _, el := range m {
+				elMap, ok := el.(map[string]interface{})
+				if !ok {
+					return fmt.Errorf("unable to parse value for roundrobin-failover mode, expected an map")
+				}
+				sonarCheckID, err := getSonarCheckID(elMap["sonarCheckId"])
+				if err != nil {
+					return err
+				}
+				valueEl := DNSFailoverItemValue{
+					Value:        elMap["value"].(string),
+					Enabled:      elMap["enabled"].(bool),
+					Order:        toInt(elMap["order"]),
+					SonarCheckID: sonarCheckID,
+				}
+				valueObj = append(valueObj, &valueEl)
+			}
+			s.Value = valueObj
+		case "pools":
+			m, ok := s.Value.([]interface{})
+			if !ok {
+				return fmt.Errorf("unable to parse value for pools mode, expected an array")
+			}
+			valueObj := make([]int, 0)
+			for _, el := range m {
+				valueObj = append(valueObj, toInt(el))
+			}
+			s.Value = valueObj
+		default:
+			return fmt.Errorf("unknown mode %q", s.Mode)
+		}
+	case "MX":
+		if s.Mode != "standard" {
+			return fmt.Errorf("unsupported mode %q for MX record", s.Mode)
+		}
 		m, ok := s.Value.([]interface{})
 		if !ok {
-			return fmt.Errorf("unable to parse value for standard mode, expected an array")
+			return fmt.Errorf("unable to parse value for MX record in standard mode, expected an array")
 		}
-		valueObj := make([]*DNSStandardItemValue, 0)
+		valueObj := make([]*DNSMXStandardItemValue, 0)
 		for _, el := range m {
 			elMap, ok := el.(map[string]interface{})
 			if !ok {
 				return fmt.Errorf("unable to parse value for standard mode, expected an map")
 			}
-			valueEl := DNSStandardItemValue{
-				Value:   elMap["value"].(string),
-				Enabled: elMap["enabled"].(bool),
+			valueEl := DNSMXStandardItemValue{
+				Server:   elMap["server"].(string),
+				Priority: toInt(elMap["priority"]),
+				Enabled:  elMap["enabled"].(bool),
 			}
 			valueObj = append(valueObj, &valueEl)
 		}
 		s.Value = valueObj
-	case "failover":
-		valueObj := DNSFailoverValue{}
-		m, ok := s.Value.(map[string]interface{})
-		if !ok {
-			return fmt.Errorf("unable to parse value for failover mode, expected an map")
-		}
-		valueObj.Mode = m["mode"].(string)
-		valueObj.Enabled = m["enabled"].(bool)
-		values := make([]*DNSFailoverItemValue, 0)
-		for _, valueItem := range m["values"].([]interface{}) {
-			valueItemMap, ok := valueItem.(map[string]interface{})
-			if !ok {
-				return fmt.Errorf("unable to parse value for value of failover mode, expected an map")
-			}
-			sonarCheckID, err := getSonarCheckID(valueItemMap["sonarCheckId"])
-			if err != nil {
-				return err
-			}
-			valueItemObj := DNSFailoverItemValue{
-				Enabled:      valueItemMap["enabled"].(bool),
-				Order:        toInt(valueItemMap["order"]),
-				Value:        valueItemMap["value"].(string),
-				SonarCheckID: sonarCheckID,
-			}
-			values = append(values, &valueItemObj)
-		}
-		valueObj.Values = values
-		s.Value = &valueObj
-	case "roundrobin-failover":
-		m, ok := s.Value.([]interface{})
-		if !ok {
-			return fmt.Errorf("unable to parse value for roundrobin-failover mode, expected an array")
-		}
-		valueObj := make([]*DNSFailoverItemValue, 0)
-		for _, el := range m {
-			elMap, ok := el.(map[string]interface{})
-			if !ok {
-				return fmt.Errorf("unable to parse value for roundrobin-failover mode, expected an map")
-			}
-			sonarCheckID, err := getSonarCheckID(elMap["sonarCheckId"])
-			if err != nil {
-				return err
-			}
-			valueEl := DNSFailoverItemValue{
-				Value:        elMap["value"].(string),
-				Enabled:      elMap["enabled"].(bool),
-				Order:        toInt(elMap["order"]),
-				SonarCheckID: sonarCheckID,
-			}
-			valueObj = append(valueObj, &valueEl)
-		}
-		s.Value = valueObj
-	case "pools":
-		m, ok := s.Value.([]interface{})
-		if !ok {
-			return fmt.Errorf("unable to parse value for pools mode, expected an array")
-		}
-		valueObj := make([]int, 0)
-		for _, el := range m {
-			valueObj = append(valueObj, toInt(el))
-		}
-		s.Value = valueObj
+
 	default:
-		return fmt.Errorf("unknown mode %q", s.Mode)
+		return fmt.Errorf("unsupported record type %q", s.Type)
 	}
 	return nil
 }
