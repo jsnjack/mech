@@ -44,17 +44,13 @@ func getConfig(configFile string) (*Config, error) {
 	}
 
 	var config Config
-	for _, item := range mainConfig.Constellix.Sonar.HTTPChecksConfigFiles {
-		configToRead := filepath.Join(filepath.Dir(configFile), item)
-		if rootVerbose {
-			logger.Printf("  reading %s...\n", configToRead)
-		}
-		configToReadBytes, err := os.ReadFile(configToRead)
-		if err != nil {
-			return nil, err
-		}
+	dataB, err := readConfigs(mainConfig.Constellix.Sonar.HTTPChecksConfigFiles, filepath.Dir(configFile))
+	if err != nil {
+		return nil, err
+	}
+	for _, item := range dataB {
 		var httpChecks []*ExpectedSonarHTTPCheck
-		err = yaml.Unmarshal(configToReadBytes, &httpChecks)
+		err = yaml.Unmarshal(item, &httpChecks)
 		if err != nil {
 			return nil, err
 		}
@@ -68,17 +64,14 @@ func getConfig(configFile string) (*Config, error) {
 			}
 		}
 	}
-	for _, item := range mainConfig.Constellix.Sonar.TCPChecksConfigFiles {
-		configToRead := filepath.Join(filepath.Dir(configFile), item)
-		if rootVerbose {
-			logger.Printf("  reading %s...\n", configToRead)
-		}
-		configToReadBytes, err := os.ReadFile(configToRead)
-		if err != nil {
-			return nil, err
-		}
+
+	dataB, err = readConfigs(mainConfig.Constellix.Sonar.TCPChecksConfigFiles, filepath.Dir(configFile))
+	if err != nil {
+		return nil, err
+	}
+	for _, item := range dataB {
 		var tcpChecks []*ExpectedSonarTCPCheck
-		err = yaml.Unmarshal(configToReadBytes, &tcpChecks)
+		err = yaml.Unmarshal(item, &tcpChecks)
 		if err != nil {
 			return nil, err
 		}
@@ -95,18 +88,14 @@ func getConfig(configFile string) (*Config, error) {
 
 	// DNS
 	config.DNS = make(map[string][]*ExpectedDNSRecord)
-	for domainName, item := range mainConfig.Constellix.DNS {
-		for _, recordsFile := range item {
-			configToRead := filepath.Join(filepath.Dir(configFile), recordsFile)
-			if rootVerbose {
-				logger.Printf("  reading %s...\n", configToRead)
-			}
-			configToReadBytes, err := os.ReadFile(configToRead)
-			if err != nil {
-				return nil, err
-			}
+	for domainName, cfs := range mainConfig.Constellix.DNS {
+		dataB, err = readConfigs(cfs, filepath.Dir(configFile))
+		if err != nil {
+			return nil, err
+		}
+		for _, dataItem := range dataB {
 			var records []*ExpectedDNSRecord
-			err = yaml.Unmarshal(configToReadBytes, &records)
+			err = yaml.Unmarshal(dataItem, &records)
 			if err != nil {
 				return nil, err
 			}
@@ -115,17 +104,13 @@ func getConfig(configFile string) (*Config, error) {
 	}
 
 	// GeoProximities
-	for _, item := range mainConfig.Constellix.GeoProximityConfigFiles {
-		configToRead := filepath.Join(filepath.Dir(configFile), item)
-		if rootVerbose {
-			logger.Printf("  reading %s...\n", configToRead)
-		}
-		configToReadBytes, err := os.ReadFile(configToRead)
-		if err != nil {
-			return nil, err
-		}
+	dataB, err = readConfigs(mainConfig.Constellix.GeoProximityConfigFiles, filepath.Dir(configFile))
+	if err != nil {
+		return nil, err
+	}
+	for _, item := range dataB {
 		var geops []*ExpectedGeoProximity
-		err = yaml.Unmarshal(configToReadBytes, &geops)
+		err = yaml.Unmarshal(item, &geops)
 		if err != nil {
 			return nil, err
 		}
@@ -157,4 +142,44 @@ func writeDiscoveryResult(collection interface{}, outputFile string) error {
 		logger.Println(string(dataBytes))
 	}
 	return nil
+}
+
+// readConfigs reads all configuration files. If file doesn't exist, assumes it is
+// a glob pattern and reads all files matching the pattern.
+func readConfigs(configFiles []string, baseDir string) ([][]byte, error) {
+	var dataBytes [][]byte
+	for _, configFile := range configFiles {
+		configToRead := filepath.Join(baseDir, configFile)
+		if _, err := os.Stat(configToRead); err == nil {
+			// File exists
+			if rootVerbose {
+				logger.Printf("  reading %s...\n", configToRead)
+			}
+			data, err := os.ReadFile(configToRead)
+			if err != nil {
+				return nil, err
+			}
+			dataBytes = append(dataBytes, data)
+		} else {
+			// File doesn't exist, assume it is a glob pattern
+			if rootVerbose {
+				logger.Printf("  assuming %s is a pattern...\n", configToRead)
+			}
+			files, err := filepath.Glob(configToRead)
+			if err != nil {
+				return nil, err
+			}
+			for _, file := range files {
+				if rootVerbose {
+					logger.Printf("  reading %s...\n", file)
+				}
+				data, err := os.ReadFile(file)
+				if err != nil {
+					return nil, err
+				}
+				dataBytes = append(dataBytes, data)
+			}
+		}
+	}
+	return dataBytes, nil
 }
