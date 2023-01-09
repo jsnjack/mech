@@ -517,3 +517,70 @@ func TestMXRecord(t *testing.T) {
 	Compare(objJ, expectedValue, t)
 	Compare(objY, expectedValue, t)
 }
+
+func TestTXTRecord(t *testing.T) {
+	data := `{"id":12494733,"name":"abc","type":"TXT","ttl":300,"mode":"standard","region":"default","ipfilter":null,"ipfilterDrop":false,"geoFailover":false,"geoproximity":null,"enabled":true,"value":[{"value":"\"google-site-verification=fJmN-QfYlsjUbH8uutPamnfirsijC7ynrt2MEGgu3Dc\"","enabled":true},{"value":"\"v=spf1 include:spf.mandrillapp.com ?all\"","enabled":true}],"lastValues":{"standard":[{"value":"\"google-site-verification=fJmN-QfYlsjUbH8uutPamnfirsijC7ynrt2MEGgu3Dc\"","enabled":true},{"value":"\"v=spf1 include:spf.mandrillapp.com ?all\"","enabled":true}]}}`
+	var objJ ExpectedDNSRecord
+	err := json.Unmarshal([]byte(data), &objJ)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	var objY ExpectedDNSRecord
+	err = yaml.Unmarshal([]byte(data), &objY)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	expectedValue := []*DNSStandardItemValue{
+		{
+			Value:   "\"google-site-verification=fJmN-QfYlsjUbH8uutPamnfirsijC7ynrt2MEGgu3Dc\"",
+			Enabled: true,
+		},
+		{
+			Value:   "\"v=spf1 include:spf.mandrillapp.com ?all\"",
+			Enabled: true,
+		},
+	}
+
+	Compare := func(obj ExpectedDNSRecord, expectedValue []*DNSStandardItemValue, t *testing.T) {
+		if objJ.Name != "abc" {
+			t.Errorf("expected %q, got %q", "abc", objJ.Name)
+			return
+		}
+		if objJ.Type != "TXT" {
+			t.Errorf("expected %q, got %q", "TXT", objJ.Type)
+			return
+		}
+
+		res, ok := objJ.Value.([]*DNSStandardItemValue)
+		if !ok {
+			t.Errorf("unexpected type %T", objJ.Value)
+			return
+		}
+		if len(res) != 2 {
+			t.Errorf("expected 2, got %d", len(res))
+			return
+		}
+		if res[0].Value != expectedValue[0].Value {
+			t.Errorf("expected %q, got %q", expectedValue[0].Value, res[0].Value)
+			return
+		}
+		if res[0].Enabled != expectedValue[0].Enabled {
+			t.Errorf("expected %t, got %t", expectedValue[0].Enabled, res[0].Enabled)
+			return
+		}
+		if res[1].Value != expectedValue[1].Value {
+			t.Errorf("expected %q, got %q", expectedValue[1].Value, res[1].Value)
+			return
+		}
+		if res[1].Enabled != expectedValue[1].Enabled {
+			t.Errorf("expected %t, got %t", expectedValue[1].Enabled, res[1].Enabled)
+			return
+		}
+	}
+
+	Compare(objJ, expectedValue, t)
+	Compare(objY, expectedValue, t)
+}

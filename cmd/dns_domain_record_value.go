@@ -147,7 +147,27 @@ func populateDNSRecordValue(record interface{}) error {
 			valueObj = append(valueObj, &valueEl)
 		}
 		s.Value = valueObj
-
+	case "TXT":
+		if s.Mode != "standard" {
+			return fmt.Errorf("unsupported mode %q for TXT record", s.Mode)
+		}
+		m, ok := s.Value.([]interface{})
+		if !ok {
+			return fmt.Errorf("unable to parse value for TXT record in standard mode, expected an array")
+		}
+		valueObj := make([]*DNSStandardItemValue, 0)
+		for _, el := range m {
+			elMap, ok := el.(map[string]interface{})
+			if !ok {
+				return fmt.Errorf("unable to parse value for TXT record in standard mode, expected an map")
+			}
+			valueEl := DNSStandardItemValue{
+				Value:   elMap["value"].(string),
+				Enabled: elMap["enabled"].(bool),
+			}
+			valueObj = append(valueObj, &valueEl)
+			s.Value = valueObj
+		}
 	default:
 		return fmt.Errorf("unsupported record type %q", s.Type)
 	}
