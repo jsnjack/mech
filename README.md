@@ -24,11 +24,11 @@ mech
 ## DNS
  - [ ] Domain records
    - [x] A
-   - [ ] AAAA
-   - [ ] ANAME
+   - [x] AAAA
+   - [x] ANAME
    - [ ] CAA
    - [ ] CERT
-   - [ ] CNAME
+   - [x] CNAME
    - [ ] HINFO
    - [ ] HTTP
    - [x] MX
@@ -39,6 +39,7 @@ mech
    - [ ] SPF
    - [ ] SRV
    - [x] TXT
+   - [ ] pools?
 
  - [x] GeoProximity
    - [ ] Renaming

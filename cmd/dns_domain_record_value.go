@@ -42,7 +42,7 @@ func populateDNSRecordValue(record interface{}) error {
 		return fmt.Errorf("unable to assert record to DNSRecord")
 	}
 	switch s.Type {
-	case "A", "AAAA":
+	case "A", "AAAA", "ANAME", "CNAME":
 		switch s.Mode {
 		case "standard":
 			m, ok := s.Value.([]interface{})
@@ -91,6 +91,9 @@ func populateDNSRecordValue(record interface{}) error {
 			valueObj.Values = values
 			s.Value = &valueObj
 		case "roundrobin-failover":
+			if s.Type == "CNAME" || s.Type == "ANAME" {
+				return fmt.Errorf("roundrobin-failover is not supported for CNAME records")
+			}
 			m, ok := s.Value.([]interface{})
 			if !ok {
 				return fmt.Errorf("unable to parse value for roundrobin-failover mode, expected an array")
