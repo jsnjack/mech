@@ -42,7 +42,7 @@ func populateDNSRecordValue(record interface{}) error {
 		return fmt.Errorf("unable to assert record to DNSRecord")
 	}
 	switch s.Type {
-	case "A":
+	case "A", "AAAA":
 		switch s.Mode {
 		case "standard":
 			m, ok := s.Value.([]interface{})
