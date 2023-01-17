@@ -11,7 +11,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-var dnsRecordResourceIDTemplate = "%s:%s:%s"
+var dnsRecordResourceIDTemplate = "%s %q (%s, %d)"
 
 // Missing fields: lastValues, skipLookup, contacts
 type DNSRecord struct {
@@ -51,7 +51,10 @@ func (ac *DNSRecord) GetResource() interface{} {
 }
 
 func (ac *DNSRecord) GetResourceID() string {
-	return fmt.Sprintf(dnsRecordResourceIDTemplate, ac.Type, ac.Name, ac.Region)
+	if ac.GeoProximity != nil {
+		return fmt.Sprintf(dnsRecordResourceIDTemplate, ac.Type, ac.Name, ac.Region, ac.GeoProximity.ID)
+	}
+	return fmt.Sprintf(dnsRecordResourceIDTemplate, ac.Type, ac.Name, ac.Region, 0)
 }
 
 func (ac *DNSRecord) GetConstellixID() int {
@@ -161,7 +164,10 @@ func (ex *ExpectedDNSRecord) GetResource() interface{} {
 }
 
 func (ex *ExpectedDNSRecord) GetResourceID() string {
-	return fmt.Sprintf(dnsRecordResourceIDTemplate, ex.Type, ex.Name, ex.Region)
+	if ex.GeoProximity != nil {
+		return fmt.Sprintf(dnsRecordResourceIDTemplate, ex.Type, ex.Name, ex.Region, ex.GeoProximity.ID)
+	}
+	return fmt.Sprintf(dnsRecordResourceIDTemplate, ex.Type, ex.Name, ex.Region, 0)
 }
 
 func (ex *ExpectedDNSRecord) SyncResourceUpdate(constellixID int) error {
