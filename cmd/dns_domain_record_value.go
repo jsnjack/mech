@@ -31,7 +31,7 @@ type DNSMXStandardItemValue struct {
 
 type aliasDNSRecord DNSRecord
 
-var sonarChecksCache = map[string]int{}
+var sonarChecksCache = map[string]*SonarHTTPCheck{}
 
 // populateDNSRecordValue populates the Value field of a DNSRecord based on the
 // Mode field.
@@ -76,14 +76,17 @@ func populateDNSRecordValue(record interface{}) error {
 				if !ok {
 					return fmt.Errorf("unable to parse value for value of failover mode, expected an map")
 				}
-				sonarCheckID, err := getSonarCheckID(valueItemMap["sonarCheckId"])
+				sonarCheckID, sonarCheckHost, err := getSonarCheckID(valueItemMap["sonarCheckId"])
 				if err != nil {
 					return err
+				}
+				if sonarCheckHost == "" {
+					sonarCheckHost = valueItemMap["value"].(string)
 				}
 				valueItemObj := DNSFailoverItemValue{
 					Enabled:      valueItemMap["enabled"].(bool),
 					Order:        toInt(valueItemMap["order"]),
-					Value:        valueItemMap["value"].(string),
+					Value:        sonarCheckHost,
 					SonarCheckID: sonarCheckID,
 				}
 				values = append(values, &valueItemObj)
@@ -104,14 +107,17 @@ func populateDNSRecordValue(record interface{}) error {
 				if !ok {
 					return fmt.Errorf("unable to parse value for roundrobin-failover mode, expected an map")
 				}
-				sonarCheckID, err := getSonarCheckID(elMap["sonarCheckId"])
+				sonarCheckID, sonarCheckHost, err := getSonarCheckID(elMap["sonarCheckId"])
 				if err != nil {
 					return err
 				}
+				if sonarCheckHost == "" {
+					sonarCheckHost = elMap["value"].(string)
+				}
 				valueEl := DNSFailoverItemValue{
-					Value:        elMap["value"].(string),
 					Enabled:      elMap["enabled"].(bool),
 					Order:        toInt(elMap["order"]),
+					Value:        sonarCheckHost,
 					SonarCheckID: sonarCheckID,
 				}
 				valueObj = append(valueObj, &valueEl)
@@ -190,43 +196,34 @@ func toInt(i interface{}) int {
 	}
 }
 
-func getSonarCheckID(i interface{}) (int, error) {
+func getSonarCheckID(i interface{}) (int, string, error) {
 	switch v := i.(type) {
 	case string:
-		checkId, ok := sonarChecksCache[v]
+		check, ok := sonarChecksCache[v]
 		if ok {
-			return checkId, nil
+			return check.ID, check.Host, nil
 		}
 		checkType, checkName, err := parseSonarCheckID(v)
 		if err != nil {
-			return 0, err
+			return 0, "", err
 		}
 		switch checkType {
 		case "http":
 			checks, err := GetSonarHTTPChecks()
 			if err != nil {
-				return 0, err
+				return 0, "", err
 			}
 			for _, check := range checks {
-				populateSonarChecksCache("http", check.Name, check.ID)
-				if check.Name == checkName {
-					return check.ID, nil
+				sonarChecksCache[fmt.Sprintf("@sonar,%s:%s", checkType, check.GetResourceID())] = check
+				if check.GetResourceID() == checkName {
+					return check.ID, check.Host, nil
 				}
 			}
-		case "tcp":
-			checks, err := GetSonarTCPChecks()
-			if err != nil {
-				return 0, err
-			}
-			for _, check := range checks {
-				populateSonarChecksCache("tcp", check.Name, check.ID)
-				if check.Name == checkName {
-					return check.ID, nil
-				}
-			}
+		default:
+			return 0, "", fmt.Errorf("unsupported check type: %s", checkType)
 		}
 	}
-	return toInt(i), nil
+	return toInt(i), "", nil
 }
 
 // parseSonarCheckID parses a sonar check ID from a string. It assumes that the string
@@ -242,8 +239,4 @@ func parseSonarCheckID(s string) (string, string, error) {
 		return "", "", fmt.Errorf("invalid sonar check ID. Expected @sonar,<check_type>:<check_name> or int")
 	}
 	return split[0], split[1], nil
-}
-
-func populateSonarChecksCache(checkType string, name string, id int) {
-	sonarChecksCache[fmt.Sprintf("@sonar,%s:%s", checkType, name)] = id
 }
