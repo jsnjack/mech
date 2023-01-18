@@ -190,7 +190,7 @@ func (ex *ExpectedDNSRecord) SyncResourceUpdate(constellixID int) error {
 		return err
 	}
 	payloadReader := bytes.NewReader(payload)
-	data, err := makev4APIRequest("PUT", endpoint, payloadReader, 200)
+	data, err := makev4APIRequest("PATCH", endpoint, payloadReader, 200)
 	if err != nil {
 		var details string
 		for _, item := range data {
