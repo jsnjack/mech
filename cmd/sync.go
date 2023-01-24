@@ -122,7 +122,7 @@ func Sync(expectedCollection, activeCollection []ResourceMatcher, doit, remove b
 	return nil
 }
 
-func generatePayload(obj interface{}, definedFieldsJSON, immutableFieldsJSON []string) ([]byte, error) {
+func generatePayload(obj interface{}, definedFieldsJSON []string) ([]byte, error) {
 	objBytes, err := json.Marshal(obj)
 	if err != nil {
 		return nil, err
@@ -136,7 +136,7 @@ func generatePayload(obj interface{}, definedFieldsJSON, immutableFieldsJSON []s
 
 	// Create a new data obj which contains only fields which need to be included (JSON)
 	for key, value := range dataIn {
-		if slices.Contains(definedFieldsJSON, key) && !slices.Contains(immutableFieldsJSON, key) {
+		if slices.Contains(definedFieldsJSON, key) {
 			dataOut[key] = value
 		}
 	}

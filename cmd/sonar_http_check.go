@@ -181,7 +181,7 @@ func (ex *ExpectedSonarHTTPCheck) SyncResourceUpdate(constellixID int) error {
 	if err != nil {
 		return err
 	}
-	payload, err := generatePayload(ex, maps.Keys(ex.definedFieldsMap), ex.immutableFields)
+	payload, err := generatePayload(ex, maps.Keys(ex.definedFieldsMap))
 	if err != nil {
 		return err
 	}
@@ -200,7 +200,7 @@ func (ex *ExpectedSonarHTTPCheck) SyncResourceCreate() error {
 	if err != nil {
 		return err
 	}
-	payload, err := generatePayload(ex, maps.Keys(ex.definedFieldsMap), nil)
+	payload, err := generatePayload(ex, maps.Keys(ex.definedFieldsMap))
 	if err != nil {
 		return err
 	}

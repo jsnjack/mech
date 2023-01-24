@@ -25,8 +25,7 @@ type IExpectedResource interface {
 	GetResourceID() string
 	// Create a new active resource via API from expected resource
 	SyncResourceCreate() error
-	// Update active resource with all fields prsented in configuration but
-	// immutable ones
+	// Update active resource with all fields prsented in configuration
 	SyncResourceUpdate(int) error
 }
 

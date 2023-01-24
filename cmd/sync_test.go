@@ -412,7 +412,7 @@ func Test_Generate_payload_full(t *testing.T) {
 		Port:          80,
 		definedFields: []string{"Port"},
 	}
-	payload, err := generatePayload(er, er.definedFields, nil)
+	payload, err := generatePayload(er, er.definedFields)
 	if err != nil {
 		t.Errorf("unexpected error: %s", err)
 		return
@@ -432,12 +432,12 @@ func Test_Generate_payload_immutable(t *testing.T) {
 		definedFields:   []string{"Port", "Name"},
 		immutableFields: []string{"Port"},
 	}
-	payload, err := generatePayload(er, er.definedFields, er.immutableFields)
+	payload, err := generatePayload(er, er.definedFields)
 	if err != nil {
 		t.Errorf("unexpected error: %s", err)
 		return
 	}
-	expected := `{"Name":"Field1"}`
+	expected := `{"Name":"Field1","Port":80}`
 	payloadStr := string(payload)
 	if payloadStr != expected {
 		t.Errorf("want %q, got %q", expected, payloadStr)
