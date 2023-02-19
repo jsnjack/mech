@@ -5,7 +5,6 @@ import (
 	"reflect"
 	"strconv"
 
-	"github.com/sergi/go-diff/diffmatchpatch"
 	"golang.org/x/exp/slices"
 )
 
@@ -55,11 +54,12 @@ type FieldDiff struct {
 
 // Return human readable string representation of the FieldDiff
 func (f *FieldDiff) String() string {
-	dmp := diffmatchpatch.New()
-	dmp.DiffEditCost = 0
-	diffs := dmp.DiffMain(f.OldValue, f.NewValue, false)
-	text := DiffPrettyText(diffs)
-	return f.FieldName + ": " + text
+	return fmt.Sprintf(
+		"%s:\n  %s\n  %s",
+		f.FieldName,
+		Red+Crossed+f.OldValue+Reset,
+		Green+f.NewValue+Reset,
+	)
 }
 
 // getFieldDiff returns FieldDiff for the given field name

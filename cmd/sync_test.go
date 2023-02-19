@@ -182,7 +182,7 @@ func Test_Sync_update_dry(t *testing.T) {
 		t.Errorf("unexpected error: %s", err)
 	}
 	output := stripBashColors(testBuffer.String())
-	expected := "update,Field1,Port: 44380\n"
+	expected := "update,Field1,\"Port:\n  443\n  80\"\n"
 	if output != expected {
 		t.Errorf("want %q, got %q", expected, output)
 		return
@@ -353,7 +353,7 @@ func Test_Sync_update_doit(t *testing.T) {
 		t.Errorf("unexpected error: %s", err)
 	}
 	output := stripBashColors(testBuffer.String())
-	expected := "update,Field1,Port: 44380\n"
+	expected := "update,Field1,\"Port:\n  443\n  80\"\n"
 	if output != expected {
 		t.Errorf("want %q, got %q", expected, output)
 		return
