@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
 	"testing"
 )
@@ -441,6 +442,36 @@ func Test_Generate_payload_immutable(t *testing.T) {
 	payloadStr := string(payload)
 	if payloadStr != expected {
 		t.Errorf("want %q, got %q", expected, payloadStr)
+		return
+	}
+}
+
+func Test_Generate_payload_ipfilter(t *testing.T) {
+	inRecord := `{"enabled":true,"geoFailover":false,"geoProximity":null,"ipfilter":{"id":1,"name":"World (Default)"},"ipfilteripDrop":false,"mode":"failover","name":"","notes":"","region":"europe","ttl":60,"type":"A","value":{"enabled":true,"mode":"normal","values":[{"enabled":true,"order":1,"sonarCheckId":42040,"value":"159.69.18.28"},{"enabled":true,"order":2,"sonarCheckId":84732,"value":"5.161.66.36"}]}}`
+	var recordObj ExpectedDNSRecord
+	err := json.Unmarshal([]byte(inRecord), &recordObj)
+	if err != nil {
+		t.Errorf("unexpected error: %s", err)
+		return
+	}
+
+	// Check parsing
+	if recordObj.IPFilter.ID != 1 {
+		t.Errorf("want 1, got %d", recordObj.IPFilter.ID)
+		return
+	}
+	if recordObj.IPFilter.Name != "World (Default)" {
+		t.Errorf("want World (Default), got %s", recordObj.IPFilter.Name)
+		return
+	}
+
+	payload, err := generatePayload(recordObj, []string{"ipfilter"})
+	if err != nil {
+		t.Errorf("unexpected error: %s", err)
+		return
+	}
+	if string(payload) != `{"ipfilter":1}` {
+		t.Errorf("want %q, got %q", `{"ipfilter":{"id":1}`, string(payload))
 		return
 	}
 }

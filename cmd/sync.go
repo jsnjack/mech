@@ -122,6 +122,8 @@ func Sync(expectedCollection, activeCollection []ResourceMatcher, doit, remove b
 	return nil
 }
 
+// generatePayload generates a JSON payload for a given Expected* resource
+// which is send to constellix API endpoint
 func generatePayload(obj interface{}, definedFieldsJSON []string) ([]byte, error) {
 	objBytes, err := json.Marshal(obj)
 	if err != nil {
@@ -137,7 +139,17 @@ func generatePayload(obj interface{}, definedFieldsJSON []string) ([]byte, error
 	// Create a new data obj which contains only fields which need to be included (JSON)
 	for key, value := range dataIn {
 		if slices.Contains(definedFieldsJSON, key) {
-			dataOut[key] = value
+			switch key {
+			case "ipfilter":
+				// ipfilter is configured as DNSIPFilter, but sent as int
+				record, ok := obj.(ExpectedDNSRecord)
+				if !ok {
+					return nil, fmt.Errorf("expected ExpectedDNSRecord, got %T", value)
+				}
+				dataOut[key] = record.IPFilter.ID
+			default:
+				dataOut[key] = value
+			}
 		}
 	}
 
