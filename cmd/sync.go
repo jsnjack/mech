@@ -36,7 +36,7 @@ func Sync(expectedCollection, activeCollection []ResourceMatcher, doit, remove b
 	// Check if anything needs to be created / updated
 	for _, r := range expectedCollection {
 		expectedResource := r.(IExpectedResource)
-		if rootVerbose {
+		if logLevel > 0 {
 			logger.Printf("Inspecting %q...\n", expectedResource.GetResourceID())
 		}
 
@@ -50,7 +50,7 @@ func Sync(expectedCollection, activeCollection []ResourceMatcher, doit, remove b
 		if err != nil {
 			return err
 		}
-		if rootVerbose {
+		if logLevel > 0 {
 			logger.Printf("  status: %s\n", action)
 		}
 		if len(diffs) == 0 {
@@ -97,12 +97,12 @@ func Sync(expectedCollection, activeCollection []ResourceMatcher, doit, remove b
 	// Check if anything needs to be deleted
 	for _, a := range activeCollection {
 		activeResource := a.(IActiveResource)
-		if rootVerbose {
+		if logLevel > 0 {
 			fmt.Printf("Inspecting %q...\n", activeResource.GetResourceID())
 		}
 		matched := getMatchingResource(activeResource, expectedCollection)
 		if matched == nil {
-			if rootVerbose {
+			if logLevel > 0 {
 				fmt.Printf("  status: %s\n", ActionDelete)
 			}
 			report.AppendRow(table.Row{

@@ -62,7 +62,7 @@ var dnsDiscoverRecordsCmd = &cobra.Command{
 		if domainID == 0 {
 			return fmt.Errorf("domain %s not found", args[0])
 		} else {
-			if rootVerbose {
+			if logLevel > 0 {
 				logger.Printf("domain %s found with ID %d", args[0], domainID)
 			}
 		}

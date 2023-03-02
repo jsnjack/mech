@@ -29,7 +29,7 @@ type Config struct {
 
 func getConfig(configFile string) (*Config, error) {
 	// Read configuration file
-	if rootVerbose {
+	if logLevel > 0 {
 		logger.Printf("Reading configuration file %s...\n", configFile)
 	}
 	dataBytes, err := os.ReadFile(configFile)
@@ -162,7 +162,7 @@ func readConfigs(configFiles []string, baseDir string) ([][]byte, error) {
 			dataBytes = append(dataBytes, data)
 		} else {
 			// File doesn't exist, assume it is a glob pattern
-			if rootVerbose {
+			if logLevel > 0 {
 				logger.Printf("  assuming %s is a pattern...\n", configToRead)
 			}
 			files, err := filepath.Glob(configToRead)

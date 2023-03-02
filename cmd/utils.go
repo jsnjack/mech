@@ -114,7 +114,7 @@ func makeSimpleAPIRequest(method string, url string, payload io.Reader, expected
 	}
 	req.Header.Add("x-cns-security-token", buildSecurityToken())
 	req.Header.Add("Content-Type", "application/json")
-	if rootVerbose {
+	if logLevel > 0 {
 		logger.Printf("  requesting %s %s ...\n", method, url)
 		if payload != nil {
 			payloadBytes, err := io.ReadAll(payload)
@@ -143,12 +143,10 @@ func makeSimpleAPIRequest(method string, url string, payload io.Reader, expected
 		return nil, err
 	}
 	if resp.StatusCode != expectedStatusCode {
-		if rootDebug {
-			logger.Println(string(body))
-		}
+		logger.Println(string(body))
 		return body, fmt.Errorf("unexpected status code %d, want %d", resp.StatusCode, expectedStatusCode)
 	}
-	if rootDebug {
+	if logLevel > 1 {
 		logger.Println(method, url, resp.StatusCode)
 		logger.Println(string(body))
 	}

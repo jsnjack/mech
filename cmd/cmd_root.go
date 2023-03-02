@@ -5,6 +5,7 @@ package cmd
 
 import (
 	"bytes"
+	"fmt"
 	"log"
 	"os"
 
@@ -15,6 +16,8 @@ var rootVerbose bool
 var rootDebug bool
 var constellixAPIKey string
 var constellixSecretKey string
+
+var logLevel int
 
 var logger *log.Logger
 var reportToTestBuffer bool
@@ -27,6 +30,17 @@ var rootCmd = &cobra.Command{
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	// Run: func(cmd *cobra.Command, args []string) { },
+	PersistentPreRun: func(cmd *cobra.Command, args []string) {
+		// Set up log level. >0 means verbose, >1 means debug
+		fmt.Println("execute")
+		if rootVerbose {
+			logLevel += 1
+		}
+
+		if rootDebug {
+			logLevel += 2
+		}
+	},
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
