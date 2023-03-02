@@ -224,11 +224,7 @@ func getSonarCheckID(i interface{}) (int, string, error) {
 			return 0, "", fmt.Errorf("unsupported check type: %s", checkType)
 		}
 	}
-	checkID := toInt(i)
-	if checkID == 0 {
-		return 0, "", fmt.Errorf("empty sonar check ID")
-	}
-	return checkID, "", nil
+	return toInt(i), "", nil
 }
 
 // parseSonarCheckID parses a sonar check ID from a string. It assumes that the string
