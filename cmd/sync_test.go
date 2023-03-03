@@ -475,3 +475,29 @@ func Test_Generate_payload_ipfilter(t *testing.T) {
 		return
 	}
 }
+
+func Test_Generate_payload_ipfilter_empty(t *testing.T) {
+	inRecord := `{"enabled":true,"geoFailover":false,"geoProximity":null,"ipfilter":null,"ipfilteripDrop":false,"mode":"failover","name":"","notes":"","region":"europe","ttl":60,"type":"A","value":{"enabled":true,"mode":"normal","values":[{"enabled":true,"order":1,"sonarCheckId":42040,"value":"159.69.18.28"},{"enabled":true,"order":2,"sonarCheckId":84732,"value":"5.161.66.36"}]}}`
+	var recordObj ExpectedDNSRecord
+	err := json.Unmarshal([]byte(inRecord), &recordObj)
+	if err != nil {
+		t.Errorf("unexpected error: %s", err)
+		return
+	}
+
+	// Check parsing
+	if recordObj.IPFilter != nil {
+		t.Errorf("want nil, got %v", recordObj.IPFilter)
+		return
+	}
+
+	payload, err := generatePayload(&recordObj, []string{"ipfilter"})
+	if err != nil {
+		t.Errorf("unexpected error: %s", err)
+		return
+	}
+	if string(payload) != `{"ipfilter":null}` {
+		t.Errorf("want %q, got %q", `{"ipfilter":null}`, string(payload))
+		return
+	}
+}

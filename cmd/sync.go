@@ -147,7 +147,11 @@ func generatePayload(obj interface{}, definedFieldsJSON []string) ([]byte, error
 				if !ok {
 					return nil, fmt.Errorf("expected *ExpectedDNSRecord, got %T", value)
 				}
-				dataOut[key] = record.IPFilter.ID
+				if record.IPFilter != nil {
+					dataOut[key] = record.IPFilter.ID
+				} else {
+					dataOut[key] = nil
+				}
 			default:
 				dataOut[key] = value
 			}
