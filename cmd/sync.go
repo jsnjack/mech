@@ -142,9 +142,10 @@ func generatePayload(obj interface{}, definedFieldsJSON []string) ([]byte, error
 			switch key {
 			case "ipfilter":
 				// ipfilter is configured as DNSIPFilter, but sent as int
-				record, ok := obj.(ExpectedDNSRecord)
+				// Note: when typecasting, pointer is map[string]interface {}
+				record, ok := obj.(*ExpectedDNSRecord)
 				if !ok {
-					return nil, fmt.Errorf("expected ExpectedDNSRecord, got %T", value)
+					return nil, fmt.Errorf("expected *ExpectedDNSRecord, got %T", value)
 				}
 				dataOut[key] = record.IPFilter.ID
 			default:

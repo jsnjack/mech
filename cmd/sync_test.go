@@ -465,7 +465,7 @@ func Test_Generate_payload_ipfilter(t *testing.T) {
 		return
 	}
 
-	payload, err := generatePayload(recordObj, []string{"ipfilter"})
+	payload, err := generatePayload(&recordObj, []string{"ipfilter"})
 	if err != nil {
 		t.Errorf("unexpected error: %s", err)
 		return
