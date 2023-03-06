@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"encoding/json"
+	"reflect"
 	"testing"
 
 	"golang.org/x/exp/slices"
@@ -577,6 +578,76 @@ func TestTXTRecord(t *testing.T) {
 		}
 		if res[1].Enabled != expectedValue[1].Enabled {
 			t.Errorf("expected %t, got %t", expectedValue[1].Enabled, res[1].Enabled)
+			return
+		}
+	}
+
+	Compare(objJ, expectedValue, t)
+	Compare(objY, expectedValue, t)
+}
+
+func TestHTTPRecord(t *testing.T) {
+	dataJ := `{"id":643222,"name":"shawn","type":"HTTP","ttl":1800,"mode":"standard","region":"default","ipfilter":null,"ipfilterDrop":false,"geoFailover":false,"geoproximity":null,"enabled":true,"value":{"hard":false,"redirectType":"frame","title":null,"keywords":null,"description":null,"url":"https:\/\/www.showingweb.com"}}`
+	dataY := `
+id: 643222
+name: shawn
+type: HTTP
+ttl: 1800
+mode: standard
+region: default
+ipfilter: null
+ipfilteripDrop: false
+geoFailover: false
+geoProximity: null
+enabled: true
+value:
+  hard: false
+  redirectType: frame
+  title: null
+  keywords: null
+  description: null
+  url: https://www.showingweb.com
+notes: ""
+`
+	var objJ ExpectedDNSRecord
+	err := json.Unmarshal([]byte(dataJ), &objJ)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	var objY ExpectedDNSRecord
+	err = yaml.Unmarshal([]byte(dataY), &objY)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	expectedValue := &DNSHTTPStandardItemValue{
+		Hard:         false,
+		RedirectType: "frame",
+		Title:        "",
+		Keywords:     "",
+		Description:  "",
+		URL:          "https://www.showingweb.com",
+	}
+
+	Compare := func(obj ExpectedDNSRecord, expectedValue *DNSHTTPStandardItemValue, t *testing.T) {
+		if objJ.Name != "shawn" {
+			t.Errorf("expected %q, got %q", "shawn", objJ.Name)
+			return
+		}
+		if objJ.Type != "HTTP" {
+			t.Errorf("expected %q, got %q", "HTTP", objJ.Type)
+			return
+		}
+
+		_, ok := objJ.Value.(*DNSHTTPStandardItemValue)
+		if !ok {
+			t.Errorf("unexpected type %T", objJ.Value)
+			return
+		}
+		if reflect.DeepEqual(obj.Value, expectedValue) == false {
+			t.Errorf("expected %v, got %v", expectedValue, obj.Value)
 			return
 		}
 	}

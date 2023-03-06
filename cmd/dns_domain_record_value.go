@@ -29,6 +29,15 @@ type DNSMXStandardItemValue struct {
 	Enabled  bool   `json:"enabled" yaml:"enabled"`
 }
 
+type DNSHTTPStandardItemValue struct {
+	Hard         bool   `json:"hard" yaml:"hard"`
+	RedirectType string `json:"redirectType" yaml:"redirectType"`
+	Title        string `json:"title" yaml:"title"`
+	Keywords     string `json:"keywords" yaml:"keywords"`
+	Description  string `json:"description" yaml:"description"`
+	URL          string `json:"url" yaml:"url"`
+}
+
 type aliasDNSRecord DNSRecord
 
 var sonarChecksCache = map[string]*SonarHTTPCheck{}
@@ -179,6 +188,22 @@ func populateDNSRecordValue(record interface{}) error {
 			valueObj = append(valueObj, &valueEl)
 			s.Value = valueObj
 		}
+	case "HTTP":
+		if s.Mode != "standard" {
+			return fmt.Errorf("unsupported mode %q for HTTP record", s.Mode)
+		}
+		m, ok := s.Value.(map[string]interface{})
+		if !ok {
+			return fmt.Errorf("unable to parse value for HTTP record in standard mode, expected a map")
+		}
+		valueObj := &DNSHTTPStandardItemValue{}
+		valueObj.Hard, _ = m["hard"].(bool)
+		valueObj.URL, _ = m["url"].(string)
+		valueObj.RedirectType, _ = m["redirectType"].(string)
+		valueObj.Title, _ = m["title"].(string)
+		valueObj.Keywords, _ = m["keywords"].(string)
+		valueObj.Description, _ = m["description"].(string)
+		s.Value = valueObj
 	default:
 		return fmt.Errorf("unsupported record type %q", s.Type)
 	}
