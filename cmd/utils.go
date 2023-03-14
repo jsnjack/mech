@@ -9,8 +9,6 @@ import (
 	"regexp"
 	"strings"
 	"time"
-
-	urlPackage "net/url"
 )
 
 const rateLimitWaitTime = 5
@@ -108,18 +106,6 @@ func getTag(obj interface{}, fieldName string, tagType string) string {
 func makeSimpleAPIRequest(method string, url string, payload io.Reader, expectedStatusCode int) (respBody []byte, err error) {
 	client := &http.Client{
 		Timeout: 30 * time.Second,
-	}
-	// For GET requests, we request non-existing page because of the bug in constellix API
-	// It shoould be removed after https://tiggee.freshdesk.com/support/tickets/72504 is fixed
-	if method == "GET" {
-		urlParsed, err := urlPackage.Parse(url)
-		if err != nil {
-			return nil, err
-		}
-		query := urlParsed.Query()
-		query.Set("page", "9999")
-		urlParsed.RawQuery = query.Encode()
-		url = urlParsed.String()
 	}
 	req, err := http.NewRequest(method, url, payload)
 

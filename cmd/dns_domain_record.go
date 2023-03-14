@@ -237,6 +237,10 @@ func GetDNSRecords(id int) ([]*DNSRecord, error) {
 	if err != nil {
 		return nil, err
 	}
+	// For GET requests, we request non-existing page because of the bug in constellix API
+	// It shoould be removed after https://tiggee.freshdesk.com/support/tickets/72504 is fixed
+	endpoint += "?page=x"
+
 	data, err := makev4APIRequest("GET", endpoint, nil, 200)
 	if err != nil {
 		return nil, fmt.Errorf("unable to retrieve DNS domains list: %s", err)
