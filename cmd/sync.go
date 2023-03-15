@@ -124,7 +124,10 @@ func Sync(expectedCollection, activeCollection []ResourceMatcher, doit, remove b
 
 // generatePayload generates a JSON payload for a given Expected* resource
 // which is send to constellix API endpoint
-func generatePayload(obj interface{}, definedFieldsJSON []string) ([]byte, error) {
+// Note: Costellix API is inconsistent. Sometimes it forces the inclusion of immutable fields
+// in the payload and sometimes it refuses to process the request if one of the immutable fields
+// is present in payload. To overcome it, excludedFieldsJSON is used.
+func generatePayload(obj interface{}, definedFieldsJSON []string, excludedFieldsJSON []string) ([]byte, error) {
 	objBytes, err := json.Marshal(obj)
 	if err != nil {
 		return nil, err
@@ -138,7 +141,7 @@ func generatePayload(obj interface{}, definedFieldsJSON []string) ([]byte, error
 
 	// Create a new data obj which contains only fields which need to be included (JSON)
 	for key, value := range dataIn {
-		if slices.Contains(definedFieldsJSON, key) {
+		if slices.Contains(definedFieldsJSON, key) && !slices.Contains(excludedFieldsJSON, key) {
 			switch key {
 			case "ipfilter":
 				// ipfilter is configured as DNSIPFilter, but sent as int

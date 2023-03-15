@@ -132,7 +132,7 @@ func (ex *ExpectedGeoProximity) SyncResourceUpdate(constellixID int) error {
 	if err != nil {
 		return err
 	}
-	payload, err := generatePayload(ex, maps.Keys(ex.definedFieldsMap))
+	payload, err := generatePayload(ex, maps.Keys(ex.definedFieldsMap), nil)
 	if err != nil {
 		return err
 	}
@@ -155,7 +155,7 @@ func (ex *ExpectedGeoProximity) SyncResourceCreate() error {
 	if err != nil {
 		return err
 	}
-	payload, err := generatePayload(ex, maps.Keys(ex.definedFieldsMap))
+	payload, err := generatePayload(ex, maps.Keys(ex.definedFieldsMap), nil)
 	if err != nil {
 		return err
 	}

@@ -413,7 +413,7 @@ func Test_Generate_payload_full(t *testing.T) {
 		Port:          80,
 		definedFields: []string{"Port"},
 	}
-	payload, err := generatePayload(er, er.definedFields)
+	payload, err := generatePayload(er, er.definedFields, nil)
 	if err != nil {
 		t.Errorf("unexpected error: %s", err)
 		return
@@ -433,12 +433,32 @@ func Test_Generate_payload_immutable(t *testing.T) {
 		definedFields:   []string{"Port", "Name"},
 		immutableFields: []string{"Port"},
 	}
-	payload, err := generatePayload(er, er.definedFields)
+	payload, err := generatePayload(er, er.definedFields, nil)
 	if err != nil {
 		t.Errorf("unexpected error: %s", err)
 		return
 	}
 	expected := `{"Name":"Field1","Port":80}`
+	payloadStr := string(payload)
+	if payloadStr != expected {
+		t.Errorf("want %q, got %q", expected, payloadStr)
+		return
+	}
+}
+
+func Test_Generate_payload_excluded(t *testing.T) {
+	er := &testExpectedResource{
+		Name:            "Field1",
+		Port:            80,
+		definedFields:   []string{"Port", "Name"},
+		immutableFields: []string{"Port"},
+	}
+	payload, err := generatePayload(er, er.definedFields, []string{"Name"})
+	if err != nil {
+		t.Errorf("unexpected error: %s", err)
+		return
+	}
+	expected := `{"Port":80}`
 	payloadStr := string(payload)
 	if payloadStr != expected {
 		t.Errorf("want %q, got %q", expected, payloadStr)
@@ -465,7 +485,7 @@ func Test_Generate_payload_ipfilter(t *testing.T) {
 		return
 	}
 
-	payload, err := generatePayload(&recordObj, []string{"ipfilter"})
+	payload, err := generatePayload(&recordObj, []string{"ipfilter"}, nil)
 	if err != nil {
 		t.Errorf("unexpected error: %s", err)
 		return
@@ -491,7 +511,7 @@ func Test_Generate_payload_ipfilter_empty(t *testing.T) {
 		return
 	}
 
-	payload, err := generatePayload(&recordObj, []string{"ipfilter"})
+	payload, err := generatePayload(&recordObj, []string{"ipfilter"}, nil)
 	if err != nil {
 		t.Errorf("unexpected error: %s", err)
 		return

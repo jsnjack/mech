@@ -161,7 +161,7 @@ func (ex *ExpectedSonarTCPCheck) SyncResourceUpdate(constellixID int) error {
 	if err != nil {
 		return err
 	}
-	payload, err := generatePayload(ex, maps.Keys(ex.definedFieldsMap))
+	payload, err := generatePayload(ex, maps.Keys(ex.definedFieldsMap), nil)
 	if err != nil {
 		return err
 	}
@@ -180,7 +180,7 @@ func (ex *ExpectedSonarTCPCheck) SyncResourceCreate() error {
 	if err != nil {
 		return err
 	}
-	payload, err := generatePayload(ex, maps.Keys(ex.definedFieldsMap))
+	payload, err := generatePayload(ex, maps.Keys(ex.definedFieldsMap), nil)
 	if err != nil {
 		return err
 	}
