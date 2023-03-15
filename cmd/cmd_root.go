@@ -5,7 +5,6 @@ package cmd
 
 import (
 	"bytes"
-	"fmt"
 	"log"
 	"os"
 
@@ -32,7 +31,6 @@ var rootCmd = &cobra.Command{
 	// Run: func(cmd *cobra.Command, args []string) { },
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
 		// Set up log level. >0 means verbose, >1 means debug
-		fmt.Println("execute")
 		if rootVerbose {
 			logLevel += 1
 		}
