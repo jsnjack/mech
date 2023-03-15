@@ -105,7 +105,7 @@ func getTag(obj interface{}, fieldName string, tagType string) string {
 // it doesn't support pagination
 func makeSimpleAPIRequest(method string, url string, payload io.Reader, expectedStatusCode int) (respBody []byte, err error) {
 	client := &http.Client{
-		Timeout: 30 * time.Second,
+		Timeout: 60 * time.Second,
 	}
 	req, err := http.NewRequest(method, url, payload)
 
