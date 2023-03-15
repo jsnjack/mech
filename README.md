@@ -30,7 +30,7 @@ mech
    - [ ] CERT
    - [x] CNAME
    - [ ] HINFO
-   - [ ] HTTP
+   - [x] HTTP
    - [x] MX
    - [ ] NAPTR
    - [ ] NS
