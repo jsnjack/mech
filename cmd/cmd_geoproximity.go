@@ -75,7 +75,7 @@ var geoproximitySyncCmd = &cobra.Command{
 		}
 		activeGeoPs := toResourceMatcher(geops)
 		expectedGeoPs := toResourceMatcher(config.GeoProximities)
-		err = Sync(expectedGeoPs, activeGeoPs, doit, allowRemoving)
+		err = Sync(expectedGeoPs, activeGeoPs, doit, allowRemoving, "Geoproximities")
 		if err != nil {
 			return err
 		}

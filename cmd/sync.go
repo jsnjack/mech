@@ -9,7 +9,7 @@ import (
 	"golang.org/x/exp/slices"
 )
 
-func Sync(expectedCollection, activeCollection []ResourceMatcher, doit, remove bool) error {
+func Sync(expectedCollection, activeCollection []ResourceMatcher, doit, remove bool, title string) error {
 	report := table.NewWriter()
 
 	// For tests, render data in csv format
@@ -30,6 +30,9 @@ func Sync(expectedCollection, activeCollection []ResourceMatcher, doit, remove b
 		report.SetOutputMirror(testBuffer)
 	} else {
 		report.SetOutputMirror(os.Stdout)
+		if title != "" {
+			report.SetTitle(title)
+		}
 		report.AppendHeader(table.Row{"Action", "Resource", "Details"})
 	}
 

@@ -184,7 +184,7 @@ var dnsSyncCmd = &cobra.Command{
 			}
 			activeRecords := toResourceMatcher(records)
 			expectedRecords := toResourceMatcher(config.DNS[domainName])
-			err = Sync(expectedRecords, activeRecords, doit, allowRemoving)
+			err = Sync(expectedRecords, activeRecords, doit, allowRemoving, "DNS records for "+domainName)
 			if err != nil {
 				return err
 			}

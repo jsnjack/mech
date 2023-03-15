@@ -75,7 +75,7 @@ func Test_Sync_create_dry(t *testing.T) {
 		reportToTestBuffer = false
 		testBuffer.Reset()
 	}()
-	err := Sync(expCol, nil, false, false)
+	err := Sync(expCol, nil, false, false, "")
 
 	if err != nil {
 		t.Errorf("unexpected error: %s", err)
@@ -103,7 +103,7 @@ func Test_Sync_delete_dry(t *testing.T) {
 		reportToTestBuffer = false
 		testBuffer.Reset()
 	}()
-	err := Sync(nil, actCol, false, false)
+	err := Sync(nil, actCol, false, false, "")
 
 	if err != nil {
 		t.Errorf("unexpected error: %s", err)
@@ -136,7 +136,7 @@ func Test_Sync_ok_dry(t *testing.T) {
 		reportToTestBuffer = false
 		testBuffer.Reset()
 	}()
-	err := Sync(expCol, actCol, false, false)
+	err := Sync(expCol, actCol, false, false, "")
 
 	if err != nil {
 		t.Errorf("unexpected error: %s", err)
@@ -177,7 +177,7 @@ func Test_Sync_update_dry(t *testing.T) {
 		reportToTestBuffer = false
 		testBuffer.Reset()
 	}()
-	err := Sync(expCol, actCol, false, false)
+	err := Sync(expCol, actCol, false, false, "")
 
 	if err != nil {
 		t.Errorf("unexpected error: %s", err)
@@ -209,7 +209,7 @@ func Test_Sync_create_doit(t *testing.T) {
 		reportToTestBuffer = false
 		testBuffer.Reset()
 	}()
-	err := Sync(expCol, nil, true, false)
+	err := Sync(expCol, nil, true, false, "")
 
 	if err != nil {
 		t.Errorf("unexpected error: %s", err)
@@ -242,7 +242,7 @@ func Test_Sync_delete_dry_doit(t *testing.T) {
 		reportToTestBuffer = false
 		testBuffer.Reset()
 	}()
-	err := Sync(nil, actCol, true, false)
+	err := Sync(nil, actCol, true, false, "")
 
 	if err != nil {
 		t.Errorf("unexpected error: %s", err)
@@ -270,7 +270,7 @@ func Test_Sync_delete_dry_doit_remove(t *testing.T) {
 		reportToTestBuffer = false
 		testBuffer.Reset()
 	}()
-	err := Sync(nil, actCol, true, true)
+	err := Sync(nil, actCol, true, true, "")
 
 	if err != nil {
 		t.Errorf("unexpected error: %s", err)
@@ -307,7 +307,7 @@ func Test_Sync_ok_doit(t *testing.T) {
 		reportToTestBuffer = false
 		testBuffer.Reset()
 	}()
-	err := Sync(expCol, actCol, true, false)
+	err := Sync(expCol, actCol, true, false, "")
 
 	if err != nil {
 		t.Errorf("unexpected error: %s", err)
@@ -348,7 +348,7 @@ func Test_Sync_update_doit(t *testing.T) {
 		reportToTestBuffer = false
 		testBuffer.Reset()
 	}()
-	err := Sync(expCol, actCol, true, false)
+	err := Sync(expCol, actCol, true, false, "")
 
 	if err != nil {
 		t.Errorf("unexpected error: %s", err)
@@ -394,7 +394,7 @@ func Test_Sync_update_dry_immutable(t *testing.T) {
 		reportToTestBuffer = false
 		testBuffer.Reset()
 	}()
-	err := Sync(expCol, actCol, false, false)
+	err := Sync(expCol, actCol, false, false, "")
 
 	if err == nil {
 		t.Errorf("expected error")
