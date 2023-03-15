@@ -1,6 +1,9 @@
 package cmd
 
 import (
+	"io"
+	"net/http"
+	"net/http/httptest"
 	"testing"
 
 	yaml "gopkg.in/yaml.v3"
@@ -53,6 +56,41 @@ port: 80
 	expected := "prod: mandatory field \"host\" is not defined"
 	if err != nil && err.Error() != expected {
 		t.Errorf("expected error %q, got %q", expected, err.Error())
+		return
+	}
+}
+
+func TestExpectedSonarHTTPCheck_SyncResourceUpdate_exclude_immutable(t *testing.T) {
+	// Set up test environment
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		body, _ := io.ReadAll(r.Body)
+		expected := `{"name":"prod","port":80}`
+		if string(body) != expected {
+			t.Errorf("expected %q, got %q", expected, string(body))
+			w.WriteHeader(http.StatusBadRequest)
+		}
+	}))
+	defer ts.Close()
+
+	originalSonarRESTAPIBaseURL := sonarRESTAPIBaseURL
+	defer func() {
+		sonarRESTAPIBaseURL = originalSonarRESTAPIBaseURL
+	}()
+	sonarRESTAPIBaseURL = ts.URL
+	data := `
+name: prod
+port: 80
+ipVersion: IPV4
+`
+	var obj ExpectedSonarHTTPCheck
+	err := yaml.Unmarshal([]byte(data), &obj)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	err = obj.SyncResourceUpdate(999)
+	if err != nil {
+		t.Error(err)
 		return
 	}
 }

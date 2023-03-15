@@ -18,8 +18,8 @@ const ActionUpate ResourceAction = "update"
 const ActionOK ResourceAction = "ok"
 const ActionError ResourceAction = "error"
 
-const sonarRESTAPIBaseURL = "https://api.sonar.constellix.com/rest/api"
-const dnsRESTAPIBaseURL = "https://api.dns.constellix.com/v4"
+var sonarRESTAPIBaseURL string = "https://api.sonar.constellix.com/rest/api"
+var dnsRESTAPIBaseURL string = "https://api.dns.constellix.com/v4"
 
 // buildSecurityToken returns security token which is used when authenticating
 // Constellix REST API requests
