@@ -53,7 +53,7 @@ constellix:
       - file2.yaml
       - ...
     tcp_checks:
-      - file3.yaml
+      - myfolder/*.yaml
   dns:
     surfly.gratis:
       - file4.yaml
