@@ -3,9 +3,9 @@ module mech
 go 1.19
 
 require (
-	github.com/jedib0t/go-pretty/v6 v6.4.2
+	github.com/jedib0t/go-pretty/v6 v6.4.6
 	github.com/spf13/cobra v1.6.1
-	golang.org/x/exp v0.0.0-20221111204811-129d8d6c17ab
+	golang.org/x/exp v0.0.0-20230315142452-642cacee5cc0
 	gopkg.in/yaml.v3 v3.0.1
 )
 
