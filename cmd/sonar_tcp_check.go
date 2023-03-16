@@ -196,7 +196,9 @@ func (ex *ExpectedSonarTCPCheck) SyncResourceCreate() error {
 // GetSonarTCPChecks returns active Sonar Checks
 func GetSonarTCPChecks() ([]*SonarTCPCheck, error) {
 	// Fetch TCP checks
-	logger.Println("Retrieving Sonar TCP Checks...")
+	if logLevel > 0 {
+		logger.Println("Retrieving Sonar TCP Checks...")
+	}
 	endpoint, err := url.JoinPath(sonarRESTAPIBaseURL, "tcp")
 	if err != nil {
 		return nil, err

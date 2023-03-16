@@ -175,7 +175,9 @@ func (ex *ExpectedGeoProximity) SyncResourceCreate() error {
 // GetGeoProximities returns active geo proximities
 func GetGeoProximities() ([]*GeoProximity, error) {
 	// Fetch HTTP checks
-	logger.Println("Retrieving GeoProximities...")
+	if logLevel > 0 {
+		logger.Println("Retrieving GeoProximities...")
+	}
 	endpoint, err := url.JoinPath(dnsRESTAPIBaseURL, "geoproximities")
 	if err != nil {
 		return nil, err

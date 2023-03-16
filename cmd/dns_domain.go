@@ -25,7 +25,9 @@ type DNSDomain struct {
 
 // GetDNSDomains returns active DNS domains in Constellix
 func GetDNSDomains() ([]*DNSDomain, error) {
-	logger.Println("Retrieving DNS domains...")
+	if logLevel > 0 {
+		logger.Println("Retrieving DNS domains...")
+	}
 	endpoint, err := url.JoinPath(dnsRESTAPIBaseURL, "domains")
 	if err != nil {
 		return nil, err

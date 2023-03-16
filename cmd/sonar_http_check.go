@@ -218,7 +218,9 @@ func (ex *ExpectedSonarHTTPCheck) SyncResourceCreate() error {
 // files (@sonar,http:... syntax)
 func GetSonarHTTPChecks() ([]*SonarHTTPCheck, error) {
 	// Fetch HTTP checks
-	logger.Println("Retrieving Sonar HTTP Checks...")
+	if logLevel > 0 {
+		logger.Println("Retrieving Sonar HTTP Checks...")
+	}
 	if len(cachedSonarHTTPChecks) > 0 {
 		if logLevel > 0 {
 			logger.Println("  using cached Sonar HTTP Checks")
@@ -247,7 +249,9 @@ func GetSonarHTTPChecks() ([]*SonarHTTPCheck, error) {
 // GetSonarHTTPCheckStatus returns active Sonar Check status using runtime endpoint
 func GetSonarHTTPCheckStatus(id int) (ResourceRuntimeStatus, error) {
 	// Fetch HTTP checks
-	logger.Printf("Retrieving status for Sonar HTTP Check %d...\n", id)
+	if logLevel > 0 {
+		logger.Printf("Retrieving status for Sonar HTTP Check %d...\n", id)
+	}
 	endpoint, err := url.JoinPath(sonarRESTAPIBaseURL, "http", strconv.Itoa(id), "status")
 	if err != nil {
 		return "", err

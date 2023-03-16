@@ -232,7 +232,9 @@ func (ex *ExpectedDNSRecord) SyncResourceCreate() error {
 
 // GetDNSRecords retrieves domain's DNS records
 func GetDNSRecords(id int) ([]*DNSRecord, error) {
-	logger.Printf("Retrieving DNS records for domain %d...\n", id)
+	if logLevel > 0 {
+		logger.Printf("Retrieving DNS records for domain %d...\n", id)
+	}
 	endpoint, err := url.JoinPath(dnsRESTAPIBaseURL, "domains", fmt.Sprintf("%d", id), "records")
 	if err != nil {
 		return nil, err
