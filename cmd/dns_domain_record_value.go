@@ -40,8 +40,6 @@ type DNSHTTPStandardItemValue struct {
 
 type aliasDNSRecord DNSRecord
 
-var sonarChecksCache = map[string]*SonarHTTPCheck{}
-
 // populateDNSRecordValue populates the Value field of a DNSRecord based on the
 // Mode field.
 // TODO: be carefull with type casting, use similar to sonarCheckID everywhere
@@ -224,10 +222,6 @@ func toInt(i interface{}) int {
 func getSonarCheckID(i interface{}) (int, string, error) {
 	switch v := i.(type) {
 	case string:
-		check, ok := sonarChecksCache[v]
-		if ok {
-			return check.ID, check.Host, nil
-		}
 		checkType, checkName, err := parseSonarCheckID(v)
 		if err != nil {
 			return 0, "", err
@@ -239,7 +233,6 @@ func getSonarCheckID(i interface{}) (int, string, error) {
 				return 0, "", err
 			}
 			for _, check := range checks {
-				sonarChecksCache[fmt.Sprintf("@sonar,%s:%s", checkType, check.GetResourceID())] = check
 				if check.GetResourceID() == checkName {
 					return check.ID, check.Host, nil
 				}

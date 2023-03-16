@@ -214,9 +214,17 @@ func (ex *ExpectedSonarHTTPCheck) SyncResourceCreate() error {
 }
 
 // GetSonarHTTPChecks returns active Sonar Checks
+// We also cache this response to avoid making API calls when parsing configuration
+// files (@sonar,http:... syntax)
 func GetSonarHTTPChecks() ([]*SonarHTTPCheck, error) {
 	// Fetch HTTP checks
 	logger.Println("Retrieving Sonar HTTP Checks...")
+	if len(cachedSonarHTTPChecks) > 0 {
+		if logLevel > 0 {
+			logger.Println("  using cached Sonar HTTP Checks")
+		}
+		return cachedSonarHTTPChecks, nil
+	}
 	endpoint, err := url.JoinPath(sonarRESTAPIBaseURL, "http")
 	if err != nil {
 		return nil, err
@@ -231,6 +239,8 @@ func GetSonarHTTPChecks() ([]*SonarHTTPCheck, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	cachedSonarHTTPChecks = checks
 	return checks, nil
 }
 
