@@ -6,6 +6,7 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"sync"
 
 	"github.com/jedib0t/go-pretty/v6/table"
 	"github.com/spf13/cobra"
@@ -166,15 +167,24 @@ var sonarDiscoverRuntimeCmd = &cobra.Command{
 				return err
 			}
 			logger.Printf("Found %d Sonar HTTP Checks\n", len(httpChecks))
-			for _, check := range httpChecks {
-				status, err := GetSonarHTTPCheckStatus(check.ID)
-				if err != nil {
-					return err
-				}
-				report.AppendRow(table.Row{
-					check.Name, "http", colorStatus(status),
-				})
+			var wg sync.WaitGroup
+			for idx, check := range httpChecks {
+				wg.Add(1)
+				go func(idx int, check *SonarHTTPCheck) {
+					defer wg.Done()
+					status, err := GetSonarHTTPCheckStatus(check.ID)
+					if err != nil {
+						report.AppendRow(table.Row{
+							check.Name, "http", err.Error(),
+						})
+					} else {
+						report.AppendRow(table.Row{
+							check.Name, "http", colorStatus(status),
+						})
+					}
+				}(idx, check)
 			}
+			wg.Wait()
 			return nil
 		default:
 			return fmt.Errorf(

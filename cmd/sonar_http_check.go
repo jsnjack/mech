@@ -237,7 +237,7 @@ func GetSonarHTTPChecks() ([]*SonarHTTPCheck, error) {
 // GetSonarHTTPCheckStatus returns active Sonar Check status using runtime endpoint
 func GetSonarHTTPCheckStatus(id int) (ResourceRuntimeStatus, error) {
 	// Fetch HTTP checks
-	logger.Println("Retrieving Sonar HTTP Check status...")
+	logger.Printf("Retrieving status for Sonar HTTP Check %d...\n", id)
 	endpoint, err := url.JoinPath(sonarRESTAPIBaseURL, "http", strconv.Itoa(id), "status")
 	if err != nil {
 		return "", err
