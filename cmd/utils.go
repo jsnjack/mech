@@ -9,6 +9,8 @@ import (
 	"regexp"
 	"strings"
 	"time"
+
+	libURL "net/url"
 )
 
 const rateLimitWaitTime = 5
@@ -172,7 +174,21 @@ func makev4APIRequest(method string, url string, payload io.Reader, expectedStat
 			if resp.Meta.Links.Next != "" {
 				url = resp.Meta.Links.Next
 			} else {
-				next = false
+				// Constellix API can't handle pagination and it seems to be that
+				// they have no intentions to fix it
+				// https://tiggee.freshdesk.com/support/tickets/72504
+				// As a workaround we will request one extra page before finishing
+				// the loop over all pages
+				if resp.Meta.Pagination.PerPage == resp.Meta.Pagination.Count {
+					parsedURL, err := libURL.Parse(url)
+					if err != nil {
+						return nil, err
+					}
+					parsedURL.RawQuery = fmt.Sprintf("page=%d", resp.Meta.Pagination.CurrentPage+1)
+					url = parsedURL.String()
+				} else {
+					next = false
+				}
 			}
 		} else {
 			next = false
