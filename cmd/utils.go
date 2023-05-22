@@ -179,7 +179,7 @@ func makev4APIRequest(method string, url string, payload io.Reader, expectedStat
 				// https://tiggee.freshdesk.com/support/tickets/72504
 				// As a workaround we will request one extra page before finishing
 				// the loop over all pages
-				if resp.Meta.Pagination.PerPage == resp.Meta.Pagination.Count {
+				if method == "GET" && resp.Meta.Pagination.PerPage == resp.Meta.Pagination.Count {
 					parsedURL, err := libURL.Parse(url)
 					if err != nil {
 						return nil, err
