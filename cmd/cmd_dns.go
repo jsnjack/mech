@@ -144,6 +144,14 @@ var dnsSyncCmd = &cobra.Command{
 			return err
 		}
 
+		only, err := cmd.Flags().GetString("only")
+		if err != nil {
+			return err
+		}
+		if only != "" {
+			logger.Printf("syncing only %s domain", only)
+		}
+
 		config, err := getConfig(configFile)
 		if err != nil {
 			return err
@@ -160,6 +168,9 @@ var dnsSyncCmd = &cobra.Command{
 		}
 
 		for domainName := range config.DNS {
+			if only != "" && only != domainName {
+				continue
+			}
 			var domainID int
 
 			for _, domain := range domains {
@@ -219,4 +230,5 @@ func init() {
 	dnsSyncCmd.PersistentFlags().StringP("config", "c", "", "configuration file, filepath")
 	dnsSyncCmd.PersistentFlags().Bool("doit", false, "apply planned changes")
 	dnsSyncCmd.PersistentFlags().Bool("remove", false, "remove resources which are not present in configuration file")
+	dnsSyncCmd.PersistentFlags().String("only", "", "execute sync command only for specified domain name")
 }
