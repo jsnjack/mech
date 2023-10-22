@@ -1,7 +1,12 @@
 mech
 =======
 
-`mech` automate Constellix DNS configuration
+`mech` automates Constellix DNS configuration (similar to [octodns](https://github.com/octodns/octodns)
+and [terraform](https://www.terraform.io/)). The advantage of `mech` is that it
+supports advanced configuration with multiple GTD regions and GeoProximity locations.
+
+The application manages DNS records, Sonar checks and GeoProximity locations. The
+functionality can easily be extended to support other Constellix resources.
 
 # Supported features
 
