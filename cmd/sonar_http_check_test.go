@@ -54,7 +54,7 @@ port: 80
 		return
 	}
 	expected := "prod: mandatory field \"host\" is not defined"
-	if err != nil && err.Error() != expected {
+	if err.Error() != expected {
 		t.Errorf("expected error %q, got %q", expected, err.Error())
 		return
 	}
