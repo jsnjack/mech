@@ -598,7 +598,7 @@ region: default
 ipfilter: null
 ipfilteripDrop: false
 geoFailover: false
-geoProximity: null
+geoproximity: null
 enabled: true
 value:
   hard: false

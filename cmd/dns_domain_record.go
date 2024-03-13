@@ -26,7 +26,7 @@ type DNSRecord struct {
 	IPFilter             *DNSIPFilter     `json:"ipfilter" yaml:"ipfilter"`
 	IPFilterIPDrop       bool             `json:"ipfilteripDrop" yaml:"ipfilteripDrop"`
 	GeoFailover          bool             `json:"geoFailover" yaml:"geoFailover"`
-	GeoProximity         *DNSGeoProximity `json:"geoProximity" yaml:"geoProximity"`
+	GeoProximity         *DNSGeoProximity `json:"geoproximity" yaml:"geoproximity"`
 	Enabled              bool             `json:"enabled" yaml:"enabled"`
 	Value                interface{}      `json:"value" yaml:"value"`
 	Notes                string           `json:"notes" yaml:"notes"`
