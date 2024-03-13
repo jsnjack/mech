@@ -596,7 +596,7 @@ ttl: 1800
 mode: standard
 region: default
 ipfilter: null
-ipfilteripDrop: false
+ipfilterDrop: false
 geoFailover: false
 geoproximity: null
 enabled: true

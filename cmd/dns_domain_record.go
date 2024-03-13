@@ -24,7 +24,7 @@ type DNSRecord struct {
 	// IPFilter is a very interesting case. On GET constellix returns object, but
 	// on POST it expects it to be just int
 	IPFilter             *DNSIPFilter     `json:"ipfilter" yaml:"ipfilter"`
-	IPFilterIPDrop       bool             `json:"ipfilteripDrop" yaml:"ipfilteripDrop"`
+	IPFilterDrop         bool             `json:"ipfilterDrop" yaml:"ipfilterDrop"`
 	GeoFailover          bool             `json:"geoFailover" yaml:"geoFailover"`
 	GeoProximity         *DNSGeoProximity `json:"geoproximity" yaml:"geoproximity"`
 	Enabled              bool             `json:"enabled" yaml:"enabled"`
