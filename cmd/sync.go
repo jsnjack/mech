@@ -145,22 +145,7 @@ func generatePayload(obj interface{}, definedFieldsJSON []string, excludedFields
 	// Create a new data obj which contains only fields which need to be included (JSON)
 	for key, value := range dataIn {
 		if slices.Contains(definedFieldsJSON, key) && !slices.Contains(excludedFieldsJSON, key) {
-			switch key {
-			case "ipfilter":
-				// ipfilter is configured as DNSIPFilter, but sent as int
-				// Note: when typecasting, pointer is map[string]interface {}
-				record, ok := obj.(*ExpectedDNSRecord)
-				if !ok {
-					return nil, fmt.Errorf("expected *ExpectedDNSRecord, got %T", value)
-				}
-				if record.IPFilter != nil {
-					dataOut[key] = record.IPFilter.ID
-				} else {
-					dataOut[key] = nil
-				}
-			default:
-				dataOut[key] = value
-			}
+			dataOut[key] = value
 		}
 	}
 

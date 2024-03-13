@@ -15,15 +15,13 @@ var dnsRecordResourceIDTemplate = "%s %q (%s, %d)"
 
 // Missing fields: lastValues, skipLookup, contacts
 type DNSRecord struct {
-	ID     int    `json:"id"`
-	Name   string `json:"name" yaml:"name"`
-	Type   string `json:"type" yaml:"type"`
-	TTL    int    `json:"ttl" yaml:"ttl"`
-	Mode   string `json:"mode" yaml:"mode"`
-	Region string `json:"region" yaml:"region"`
-	// IPFilter is a very interesting case. On GET constellix returns object, but
-	// on POST it expects it to be just int
-	IPFilter             *DNSIPFilter     `json:"ipfilter" yaml:"ipfilter"`
+	ID                   int              `json:"id"`
+	Name                 string           `json:"name" yaml:"name"`
+	Type                 string           `json:"type" yaml:"type"`
+	TTL                  int              `json:"ttl" yaml:"ttl"`
+	Mode                 string           `json:"mode" yaml:"mode"`
+	Region               string           `json:"region" yaml:"region"`
+	IPFilter             interface{}      `json:"ipfilter" yaml:"ipfilter"`
 	IPFilterDrop         bool             `json:"ipfilterDrop" yaml:"ipfilterDrop"`
 	GeoFailover          bool             `json:"geoFailover" yaml:"geoFailover"`
 	GeoProximity         *DNSGeoProximity `json:"geoproximity" yaml:"geoproximity"`
@@ -41,6 +39,10 @@ func (ac *DNSRecord) UnmarshalJSON(b []byte) error {
 	}
 	s := DNSRecord(alias)
 	err = populateDNSRecordValue(&s)
+	if err != nil {
+		return err
+	}
+	err = populateDNSRecordIPFilter(&s)
 	if err != nil {
 		return err
 	}
@@ -88,11 +90,6 @@ func (ac *DNSRecord) SyncResourceDelete(constellixID int) error {
 		return fmt.Errorf("unable to delete DNS record: %s", err)
 	}
 	return nil
-}
-
-type DNSIPFilter struct {
-	ID   int    `json:"id"`
-	Name string `json:"name"`
 }
 
 type DNSGeoProximity struct {
