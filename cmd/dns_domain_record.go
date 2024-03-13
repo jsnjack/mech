@@ -15,19 +15,19 @@ var dnsRecordResourceIDTemplate = "%s %q (%s, %d)"
 
 // Missing fields: lastValues, skipLookup, contacts
 type DNSRecord struct {
-	ID                   int              `json:"id"`
-	Name                 string           `json:"name" yaml:"name"`
-	Type                 string           `json:"type" yaml:"type"`
-	TTL                  int              `json:"ttl" yaml:"ttl"`
-	Mode                 string           `json:"mode" yaml:"mode"`
-	Region               string           `json:"region" yaml:"region"`
-	IPFilter             interface{}      `json:"ipfilter" yaml:"ipfilter"`
-	IPFilterDrop         bool             `json:"ipfilterDrop" yaml:"ipfilterDrop"`
-	GeoFailover          bool             `json:"geoFailover" yaml:"geoFailover"`
-	GeoProximity         *DNSGeoProximity `json:"geoproximity" yaml:"geoproximity"`
-	Enabled              bool             `json:"enabled" yaml:"enabled"`
-	Value                interface{}      `json:"value" yaml:"value"`
-	Notes                string           `json:"notes" yaml:"notes"`
+	ID                   int         `json:"id"`
+	Name                 string      `json:"name" yaml:"name"`
+	Type                 string      `json:"type" yaml:"type"`
+	TTL                  int         `json:"ttl" yaml:"ttl"`
+	Mode                 string      `json:"mode" yaml:"mode"`
+	Region               string      `json:"region" yaml:"region"`
+	IPFilter             interface{} `json:"ipfilter" yaml:"ipfilter"`
+	IPFilterDrop         bool        `json:"ipfilterDrop" yaml:"ipfilterDrop"`
+	GeoFailover          bool        `json:"geoFailover" yaml:"geoFailover"`
+	GeoProximity         interface{} `json:"geoproximity" yaml:"geoproximity"`
+	Enabled              bool        `json:"enabled" yaml:"enabled"`
+	Value                interface{} `json:"value" yaml:"value"`
+	Notes                string      `json:"notes" yaml:"notes"`
 	domainIDInConstellix int
 }
 
@@ -42,7 +42,11 @@ func (ac *DNSRecord) UnmarshalJSON(b []byte) error {
 	if err != nil {
 		return err
 	}
-	err = populateDNSRecordIPFilter(&s)
+	err = populateDNSRecordIPFilterForJSON(&s)
+	if err != nil {
+		return err
+	}
+	err = populateDNSRecordGeoproximityForJSON(&s)
 	if err != nil {
 		return err
 	}
@@ -56,7 +60,7 @@ func (ac *DNSRecord) GetResource() interface{} {
 
 func (ac *DNSRecord) GetResourceID() string {
 	if ac.GeoProximity != nil {
-		return fmt.Sprintf(dnsRecordResourceIDTemplate, ac.Type, ac.Name, ac.Region, ac.GeoProximity.ID)
+		return fmt.Sprintf(dnsRecordResourceIDTemplate, ac.Type, ac.Name, ac.Region, ac.GeoProximity)
 	}
 	return fmt.Sprintf(dnsRecordResourceIDTemplate, ac.Type, ac.Name, ac.Region, 0)
 }
@@ -92,11 +96,6 @@ func (ac *DNSRecord) SyncResourceDelete(constellixID int) error {
 	return nil
 }
 
-type DNSGeoProximity struct {
-	ID   int    `json:"id"`
-	Name string `json:"name"`
-}
-
 type ExpectedDNSRecord struct {
 	// Mapping of defined fields from parsed data to struct Field Names
 	definedFieldsMap map[string]string
@@ -120,6 +119,14 @@ func (ex *ExpectedDNSRecord) UnmarshalYAML(value *yaml.Node) error {
 	}
 
 	err = populateDNSRecordValue(&s)
+	if err != nil {
+		return err
+	}
+	err = populateDNSRecordIPFilterForYAML(&s)
+	if err != nil {
+		return err
+	}
+	err = populateDNSRecordGeoproximityForYAML(&s)
 	if err != nil {
 		return err
 	}
@@ -164,7 +171,7 @@ func (ex *ExpectedDNSRecord) GetResource() interface{} {
 
 func (ex *ExpectedDNSRecord) GetResourceID() string {
 	if ex.GeoProximity != nil {
-		return fmt.Sprintf(dnsRecordResourceIDTemplate, ex.Type, ex.Name, ex.Region, ex.GeoProximity.ID)
+		return fmt.Sprintf(dnsRecordResourceIDTemplate, ex.Type, ex.Name, ex.Region, ex.GeoProximity)
 	}
 	return fmt.Sprintf(dnsRecordResourceIDTemplate, ex.Type, ex.Name, ex.Region, 0)
 }

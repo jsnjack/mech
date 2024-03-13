@@ -173,7 +173,7 @@ func (ex *ExpectedGeoProximity) SyncResourceCreate() error {
 }
 
 // GetGeoProximities returns active geo proximities
-func GetGeoProximities() ([]*GeoProximity, error) {
+var GetGeoProximities = func() ([]*GeoProximity, error) {
 	// Fetch HTTP checks
 	if logLevel > 0 {
 		logger.Println("Retrieving GeoProximities...")
