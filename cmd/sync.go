@@ -16,20 +16,6 @@ func Sync(expectedCollection, activeCollection []ResourceMatcher, doit, remove b
 	toUpdate := map[IExpectedResource]int{}
 	toCreate := []IExpectedResource{}
 
-	// For tests, render data in csv format
-	defer func() {
-		if report.Length() > 0 {
-			if reportToTestBuffer {
-				report.RenderCSV()
-			} else {
-				report.Render()
-				logger.Printf("SUMMARY: %d to delete, %d to update, %d to create\n", len(toDelete), len(toUpdate), len(toCreate))
-			}
-		} else {
-			logger.Println("  nothing to do")
-		}
-	}()
-
 	if reportToTestBuffer {
 		// Skip header in tests
 		report.SetOutputMirror(testBuffer)
@@ -116,11 +102,16 @@ func Sync(expectedCollection, activeCollection []ResourceMatcher, doit, remove b
 			}
 		}
 	}
+
+	printReport(report)
+	logger.Printf("SUMMARY: %d to delete, %d to update, %d to create\n", len(toDelete), len(toUpdate), len(toCreate))
+
 	if doit {
 		if !remove && len(toDelete) > 0 {
 			return fmt.Errorf("resource deletion is not allowed. Use --remove flag to allow it")
 		}
-		err := applySync(toDelete, toUpdate, toCreate)
+		logger.Println("Syncing changes...")
+		err := syncChanges(toDelete, toUpdate, toCreate)
 		if err != nil {
 			return err
 		}
@@ -128,7 +119,18 @@ func Sync(expectedCollection, activeCollection []ResourceMatcher, doit, remove b
 	return nil
 }
 
-func applySync(toDelete []IActiveResource, toUpdate map[IExpectedResource]int, toCreate []IExpectedResource) error {
+func printReport(report table.Writer) {
+	if report.Length() > 0 {
+		if reportToTestBuffer {
+			// Skip header in tests to simplify testing
+			report.RenderCSV()
+		} else {
+			report.Render()
+		}
+	}
+}
+
+func syncChanges(toDelete []IActiveResource, toUpdate map[IExpectedResource]int, toCreate []IExpectedResource) error {
 
 	// First, we delete resources
 	for _, resource := range toDelete {
