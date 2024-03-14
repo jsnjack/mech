@@ -40,5 +40,4 @@ func populateDNSRecordIPFilterForYAML(record interface{}) error {
 	default:
 		return fmt.Errorf("unable to parse value for ipfilter, expected an integer")
 	}
-	return nil
 }
