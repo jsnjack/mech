@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"sort"
+	"strings"
 
 	"github.com/jedib0t/go-pretty/v6/table"
 	"golang.org/x/exp/slices"
@@ -131,8 +133,27 @@ func printReport(report table.Writer) {
 }
 
 func syncChanges(toDelete []IActiveResource, toUpdate map[IExpectedResource]int, toCreate []IExpectedResource) error {
-
 	// First, we delete resources
+	// If the resource is DNSRecord, we must first remove the ones with geoproximities.
+	// They will not end with " 0)"
+	// Note: the sorting is very simple and might affect other resources
+	sort.Slice(toDelete, func(i, j int) bool {
+		iEndsWithZero := strings.HasSuffix(toDelete[i].GetResourceID(), " 0)")
+		jEndsWithZero := strings.HasSuffix(toDelete[j].GetResourceID(), " 0)")
+
+		// If both end with " 0)" or both don't, sort by the resource ID
+		if iEndsWithZero == jEndsWithZero {
+			return toDelete[i].GetResourceID() < toDelete[j].GetResourceID()
+		}
+
+		// If i ends with " 0)" and j doesn't, i should come after j
+		if iEndsWithZero && !jEndsWithZero {
+			return false
+		}
+
+		// If j ends with " 0)" and i doesn't, i should come before j
+		return true
+	})
 	for _, resource := range toDelete {
 		err := resource.SyncResourceDelete(resource.GetConstellixID())
 		if err != nil {
