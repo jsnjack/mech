@@ -88,20 +88,17 @@ func Sync(expectedCollection, activeCollection []ResourceMatcher, doit, remove b
 			}
 		}
 		report.AppendSeparator()
-		if doit {
-			switch action {
-			case ActionOK:
-				break
-			case ActionUpate:
-				toUpdate[expectedResource] = activeResource.GetConstellixID()
-			case ActionCreate:
-				toCreate = append(toCreate, expectedResource)
-			case ActionError:
-				report.Render()
-				os.Exit(1)
-			default:
-				return fmt.Errorf("unhandled action %q", action)
-			}
+		switch action {
+		case ActionOK:
+		case ActionUpate:
+			toUpdate[expectedResource] = activeResource.GetConstellixID()
+		case ActionCreate:
+			toCreate = append(toCreate, expectedResource)
+		case ActionError:
+			report.Render()
+			os.Exit(1)
+		default:
+			return fmt.Errorf("unhandled action %q", action)
 		}
 	}
 
