@@ -36,6 +36,32 @@ func Sync(expectedCollection, activeCollection []ResourceMatcher, doit, remove b
 		report.AppendHeader(table.Row{"Action", "Resource", "Details"})
 	}
 
+	// Check if anything needs to be deleted first
+	for _, a := range activeCollection {
+		activeResource := a.(IActiveResource)
+		if logLevel > 0 {
+			fmt.Printf("Inspecting %q...\n", activeResource.GetResourceID())
+		}
+		matched := getMatchingResource(activeResource, expectedCollection)
+		if matched == nil {
+			if logLevel > 0 {
+				fmt.Printf("  status: %s\n", ActionDelete)
+			}
+			report.AppendRow(table.Row{
+				colorAction(ActionDelete),
+				activeResource.GetResourceID(),
+				fmt.Sprintf("Resource ID %d", activeResource.GetConstellixID()),
+			})
+			report.AppendSeparator()
+			if doit && remove {
+				err := activeResource.SyncResourceDelete(activeResource.GetConstellixID())
+				if err != nil {
+					return err
+				}
+			}
+		}
+	}
+
 	// Check if anything needs to be created / updated
 	for _, r := range expectedCollection {
 		expectedResource := r.(IExpectedResource)
@@ -93,32 +119,6 @@ func Sync(expectedCollection, activeCollection []ResourceMatcher, doit, remove b
 				os.Exit(1)
 			default:
 				return fmt.Errorf("unhandled action %q", action)
-			}
-		}
-	}
-
-	// Check if anything needs to be deleted
-	for _, a := range activeCollection {
-		activeResource := a.(IActiveResource)
-		if logLevel > 0 {
-			fmt.Printf("Inspecting %q...\n", activeResource.GetResourceID())
-		}
-		matched := getMatchingResource(activeResource, expectedCollection)
-		if matched == nil {
-			if logLevel > 0 {
-				fmt.Printf("  status: %s\n", ActionDelete)
-			}
-			report.AppendRow(table.Row{
-				colorAction(ActionDelete),
-				activeResource.GetResourceID(),
-				fmt.Sprintf("Resource ID %d", activeResource.GetConstellixID()),
-			})
-			report.AppendSeparator()
-			if doit && remove {
-				err := activeResource.SyncResourceDelete(activeResource.GetConstellixID())
-				if err != nil {
-					return err
-				}
 			}
 		}
 	}
