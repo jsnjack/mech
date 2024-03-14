@@ -12,6 +12,10 @@ import (
 func Sync(expectedCollection, activeCollection []ResourceMatcher, doit, remove bool, title string) error {
 	report := table.NewWriter()
 
+	toDelete := []IActiveResource{}
+	toUpdate := map[IExpectedResource]int{}
+	toCreate := []IExpectedResource{}
+
 	// For tests, render data in csv format
 	defer func() {
 		if report.Length() > 0 {
@@ -19,6 +23,7 @@ func Sync(expectedCollection, activeCollection []ResourceMatcher, doit, remove b
 				report.RenderCSV()
 			} else {
 				report.Render()
+				logger.Printf("SUMMARY: %d to delete, %d to update, %d to create\n", len(toDelete), len(toUpdate), len(toCreate))
 			}
 		} else {
 			logger.Println("  nothing to do")
@@ -53,12 +58,7 @@ func Sync(expectedCollection, activeCollection []ResourceMatcher, doit, remove b
 				fmt.Sprintf("Resource ID %d", activeResource.GetConstellixID()),
 			})
 			report.AppendSeparator()
-			if doit && remove {
-				err := activeResource.SyncResourceDelete(activeResource.GetConstellixID())
-				if err != nil {
-					return err
-				}
-			}
+			toDelete = append(toDelete, activeResource)
 		}
 	}
 
@@ -105,21 +105,52 @@ func Sync(expectedCollection, activeCollection []ResourceMatcher, doit, remove b
 			case ActionOK:
 				break
 			case ActionUpate:
-				err := expectedResource.SyncResourceUpdate(activeResource.GetConstellixID())
-				if err != nil {
-					return err
-				}
+				toUpdate[expectedResource] = activeResource.GetConstellixID()
 			case ActionCreate:
-				err = expectedResource.SyncResourceCreate()
-				if err != nil {
-					return err
-				}
+				toCreate = append(toCreate, expectedResource)
 			case ActionError:
 				report.Render()
 				os.Exit(1)
 			default:
 				return fmt.Errorf("unhandled action %q", action)
 			}
+		}
+	}
+	if doit {
+		if !remove && len(toDelete) > 0 {
+			return fmt.Errorf("resource deletion is not allowed. Use --remove flag to allow it")
+		}
+		err := applySync(toDelete, toUpdate, toCreate)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func applySync(toDelete []IActiveResource, toUpdate map[IExpectedResource]int, toCreate []IExpectedResource) error {
+
+	// First, we delete resources
+	for _, resource := range toDelete {
+		err := resource.SyncResourceDelete(resource.GetConstellixID())
+		if err != nil {
+			return err
+		}
+	}
+
+	// Then, we update resources
+	for resource, constellixID := range toUpdate {
+		err := resource.SyncResourceUpdate(constellixID)
+		if err != nil {
+			return err
+		}
+	}
+
+	// Finally, we create resources
+	for _, resource := range toCreate {
+		err := resource.SyncResourceCreate()
+		if err != nil {
+			return err
 		}
 	}
 	return nil

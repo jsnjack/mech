@@ -243,9 +243,14 @@ func Test_Sync_delete_dry_doit(t *testing.T) {
 		testBuffer.Reset()
 	}()
 	err := Sync(nil, actCol, true, false, "")
+	expectedErr := "resource deletion is not allowed. Use --remove flag to allow it"
 
-	if err != nil {
-		t.Errorf("unexpected error: %s", err)
+	if err == nil {
+		t.Errorf("expected error, got nil")
+	}
+	if err.Error() != expectedErr {
+		t.Errorf("want error %q, got %q", expectedErr, err.Error())
+		return
 	}
 	output := stripBashColors(testBuffer.String())
 	expected := "delete,Field1,Resource ID 999\n"
