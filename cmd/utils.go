@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"reflect"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 
@@ -134,8 +135,17 @@ func makeSimpleAPIRequest(method string, url string, payload io.Reader, expected
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode == 429 {
-		logger.Printf("Rate limit exceeded, waiting %d second...\n", rateLimitWaitTime)
+	if resp.StatusCode == http.StatusTooManyRequests {
+		// Proper way to handle rate limit would be to parse the X-Ratelimit-Reset header
+		if resetHeaderValue, ok := resp.Header["X-Ratelimit-Reset"]; ok {
+			if sleep, err := strconv.ParseInt(resetHeaderValue[0], 10, 64); err == nil {
+				logger.Printf("Rate limit exceeded, waiting %d seconds...\n", sleep)
+				time.Sleep(time.Duration(sleep) * time.Second)
+				return makeSimpleAPIRequest(method, url, payload, expectedStatusCode)
+			}
+		}
+		// If the header is not present, we will wait for a fixed time
+		logger.Printf("Rate limit exceeded, waiting %d seconds...\n", rateLimitWaitTime)
 		time.Sleep(time.Duration(rateLimitWaitTime) * time.Second)
 		return makeSimpleAPIRequest(method, url, payload, expectedStatusCode)
 	}
