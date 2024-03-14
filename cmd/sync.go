@@ -119,13 +119,11 @@ func Sync(expectedCollection, activeCollection []ResourceMatcher, doit, remove b
 }
 
 func printReport(report table.Writer) {
-	if report.Length() > 0 {
-		if reportToTestBuffer {
-			// Skip header in tests to simplify testing
-			report.RenderCSV()
-		} else {
-			report.Render()
-		}
+	if reportToTestBuffer {
+		// Skip header in tests to simplify testing
+		report.RenderCSV()
+	} else {
+		report.Render()
 	}
 }
 
