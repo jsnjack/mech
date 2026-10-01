@@ -197,6 +197,10 @@ func (ex *ExpectedSonarTCPCheck) SyncResourceCreate() error {
 // GetSonarTCPChecks returns active Sonar Checks
 func GetSonarTCPChecks() ([]*SonarTCPCheck, error) {
 	L.Debug("retrieving Sonar TCP checks")
+	if len(cachedSonarTCPChecks) > 0 {
+		L.Debug("using cached Sonar TCP checks")
+		return cachedSonarTCPChecks, nil
+	}
 	endpoint, err := url.JoinPath(sonarRESTAPIBaseURL, "tcp")
 	if err != nil {
 		return nil, fmt.Errorf("build Sonar TCP checks endpoint: %w", err)
@@ -211,5 +215,7 @@ func GetSonarTCPChecks() ([]*SonarTCPCheck, error) {
 	if err != nil {
 		return nil, fmt.Errorf("parse Sonar TCP checks response: %w", err)
 	}
+
+	cachedSonarTCPChecks = checks
 	return checks, nil
 }
