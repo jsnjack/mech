@@ -180,6 +180,9 @@ checkSites: [1]
 }
 
 func TestGetSonarTCPChecks(t *testing.T) {
+	cachedSonarTCPChecks = nil
+	defer func() { cachedSonarTCPChecks = nil }()
+
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != "GET" {
 			t.Errorf("expected GET, got %s", r.Method)
@@ -206,6 +209,9 @@ func TestGetSonarTCPChecks(t *testing.T) {
 }
 
 func TestGetSonarTCPChecks_unexpected_status(t *testing.T) {
+	cachedSonarTCPChecks = nil
+	defer func() { cachedSonarTCPChecks = nil }()
+
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 	}))
@@ -217,5 +223,40 @@ func TestGetSonarTCPChecks_unexpected_status(t *testing.T) {
 
 	if _, err := GetSonarTCPChecks(); err == nil {
 		t.Fatal("expected error, got nil")
+	}
+}
+
+func TestGetSonarTCPChecks_cached(t *testing.T) {
+	cachedSonarTCPChecks = []*SonarTCPCheck{{ID: 1, Name: "cached"}}
+	defer func() { cachedSonarTCPChecks = nil }()
+
+	// No server configured; a cache miss would fail to connect.
+	originalSonarRESTAPIBaseURL := sonarRESTAPIBaseURL
+	defer func() { sonarRESTAPIBaseURL = originalSonarRESTAPIBaseURL }()
+	sonarRESTAPIBaseURL = "http://127.0.0.1:0"
+
+	checks, err := GetSonarTCPChecks()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(checks) != 1 || checks[0].Name != "cached" {
+		t.Fatalf("expected cached result, got %v", checks)
+	}
+}
+
+func TestGetSonarCheckID_tcp(t *testing.T) {
+	cachedSonarTCPChecks = []*SonarTCPCheck{{ID: 7, Name: "turn", Host: "1.2.3.4"}}
+	defer func() { cachedSonarTCPChecks = nil }()
+
+	id, host, err := getSonarCheckID("@sonar,tcp:turn")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if id != 7 || host != "1.2.3.4" {
+		t.Errorf("expected (7, 1.2.3.4), got (%d, %s)", id, host)
+	}
+
+	if _, _, err := getSonarCheckID("@sonar,tcp:missing"); err == nil {
+		t.Error("expected error for unknown check, got nil")
 	}
 }

@@ -349,6 +349,17 @@ func getSonarCheckID(i interface{}) (int, string, error) {
 				}
 			}
 			return 0, "", fmt.Errorf("unable to find sonar check %s:%s", checkType, checkName)
+		case "tcp":
+			checks, err := GetSonarTCPChecks()
+			if err != nil {
+				return 0, "", err
+			}
+			for _, check := range checks {
+				if check.GetResourceID() == checkName {
+					return check.ID, check.Host, nil
+				}
+			}
+			return 0, "", fmt.Errorf("unable to find sonar check %s:%s", checkType, checkName)
 		default:
 			return 0, "", fmt.Errorf("unsupported check type: %s", checkType)
 		}
