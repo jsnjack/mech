@@ -68,7 +68,7 @@ constellix:
 
 ## Resource naming
 
-Some of the resource (e.g. Sonar check ID in failover configuration) can be specified in 2 different ways:
+Some resources (e.g. a Sonar check ID in failover configuration) can be specified in two different ways:
  - ID of the resource, int
  - dynamically discovered value (e.g. `@sonar,http:test-online`). When parsing the configuration `mech` will call Constellix
    Sonar REST API and retrieve all available http checks. If one of the http checks has name `test-online`, it's ID will be
