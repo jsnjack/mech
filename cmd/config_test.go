@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	yaml "gopkg.in/yaml.v3"
+	yaml "go.yaml.in/yaml/v3"
 )
 
 // writeTestFiles creates each file (path relative to dir -> content) under dir.

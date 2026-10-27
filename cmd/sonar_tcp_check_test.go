@@ -6,7 +6,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	yaml "gopkg.in/yaml.v3"
+	yaml "go.yaml.in/yaml/v3"
 )
 
 func TestSonarTCPCheck_GetResourceID(t *testing.T) {
