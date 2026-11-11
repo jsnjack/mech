@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	yaml "gopkg.in/yaml.v3"
+	yaml "go.yaml.in/yaml/v3"
 )
 
 func Test_Compare_http_checks_diff_port(t *testing.T) {

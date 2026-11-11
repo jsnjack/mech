@@ -9,7 +9,7 @@ import (
 	"slices"
 	"testing"
 
-	yaml "gopkg.in/yaml.v3"
+	yaml "go.yaml.in/yaml/v3"
 )
 
 func TestExpectedDNSRecord_Standard_UnmarshalYAML(t *testing.T) {
