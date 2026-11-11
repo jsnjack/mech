@@ -1,5 +1,6 @@
 package cmd
 
-var cachedSonarHTTPChecks = make([]*SonarHTTPCheck, 0)
+var cachedSonarHTTPChecks []*SonarHTTPCheck
+var cachedGeoProximities []*GeoProximity
 
 var cachedSonarTCPChecks = make([]*SonarTCPCheck, 0)
